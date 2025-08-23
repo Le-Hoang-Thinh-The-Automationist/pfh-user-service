@@ -1,0 +1,13 @@
+name: Call Service Workflow
+
+on:
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  call-service-workflow:
+    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/service-workflow.yml@main
+    with:
+      environment: Production
+      service-name: my-awesome-service
+    secrets:
+      deploy_token: ${{ secrets.DEPLOY_TOKEN }}
