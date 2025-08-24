@@ -8,10 +8,10 @@
 
 ✅ **Acceptance Criteria:**
 
-* **AC.1:** Endpoint `/db/status` (or equivalent) is available.
-* **AC.2:** Returns HTTP `200` when DB is reachable.
-* **AC.3:** JSON response includes `{ "status": "connected", "db": "postgresql" }`.
-* **AC.4:** Returns HTTP `503` if DB is unreachable.
+- [ ] **AC.1:** Endpoint `/db/status` (or equivalent) is available.
+- [ ] **AC.2:** Returns HTTP `200` when DB is reachable.
+- [ ] **AC.3:** JSON response includes `{ "status": "connected", "db": "postgresql" }`.
+- [ ] **AC.4:** Returns HTTP `503` if DB is unreachable.
 
 ---
 
@@ -23,10 +23,10 @@
 
 ✅ **Acceptance Criteria:**
 
-* **AC.1:** `/actuator/health` endpoint is enabled.
-* **AC.2:** Returns HTTP `200` and `{ "status": "UP" }` when service is healthy.
-* **AC.3:** Includes DB, cache, and message broker health indicators (if configured).
-* **AC.4:** Returns HTTP `503` when service is unhealthy.
+- [ ] **AC.1:** `/actuator/health` endpoint is enabled.
+- [ ] **AC.2:** Returns HTTP `200` and `{ "status": "UP" }` when service is healthy.
+- [ ] **AC.3:** Includes DB, cache, and message broker health indicators (if configured).
+- [ ] **AC.4:** Returns HTTP `503` when service is unhealthy.
 
 ---
 
@@ -38,9 +38,9 @@
 
 ✅ **Acceptance Criteria:**
 
-* **AC.1:** `/api/auth/login` endpoint responds with `200` on valid request.
-* **AC.2:** `/api/auth/logout` endpoint responds with `200` on valid request.
-* **AC.3:** Unauthorized requests to protected endpoints return `401 Unauthorized`.
+- [ ] **AC.1:** `/api/auth/login` endpoint responds with `200` on valid request.
+- [ ] **AC.2:** `/api/auth/logout` endpoint responds with `200` on valid request.
+- [ ] **AC.3:** Unauthorized requests to protected endpoints return `401 Unauthorized`.
 
 ---
 
@@ -52,6 +52,6 @@
 
 ✅ **Acceptance Criteria:**
 
-* **AC.1:** `/actuator/env` endpoint is enabled (secured).
-* **AC.2:** Returns application-level configs (masked for sensitive values).
-* **AC.3:** Accessible only by authorized roles (e.g., `ADMIN`).
+- [ ] **AC.1:** `/actuator/env` endpoint is enabled (secured).
+- [ ] **AC.2:** Returns application-level configs (masked for sensitive values).
+- [ ] **AC.3:** Accessible only by authorized roles (e.g., `ADMIN`).
