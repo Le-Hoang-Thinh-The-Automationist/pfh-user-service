@@ -19,23 +19,23 @@ jobs:
           case "${{ github.ref_name }}" in
             dev)
               echo "environment=Development" >> $GITHUB_OUTPUT
-              $DEPLOYMENT_ENV=Development
+              DEPLOYMENT_ENV=Development
               ;;
             qa)
               echo "environment=QA" >> $GITHUB_OUTPUT
-              $DEPLOYMENT_ENV=QA
+              DEPLOYMENT_ENV=QA
               ;;
             stag)
               echo "environment=UAT" >> $GITHUB_OUTPUT
-              $DEPLOYMENT_ENV=UAT
+              DEPLOYMENT_ENV=UAT
               ;;
             prod)
               echo "environment=Production" >> $GITHUB_OUTPUT
-              $DEPLOYMENT_ENV=Production
+              DEPLOYMENT_ENV=Production
               ;;
             *)
               echo "environment=Feature" >> $GITHUB_OUTPUT
-              $DEPLOYMENT_ENV=Feature
+              DEPLOYMENT_ENV=Feature
               ;;
           esac
           echo "The matching deployment's environment is $DEPLOYMENT_ENV"
