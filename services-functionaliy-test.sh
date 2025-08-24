@@ -39,21 +39,31 @@ docker compose up -d postgre_db
 
 # Run testing
 echo "Execute the test for $TEST_TYPE tests..."
+exit_code=0
 case "$TEST_TYPE" in
   unit)
     echo "✅ Begin execute unit tests.."
     mvn clean test -B -Dtest=**/component/**/*
+    if [ $? -ne 0 ]; then
+      echo "❌ Unit tests failed. Exiting..."
+      exit_code=1
+    fi
     ;;
   int)
     echo "✅ Begin execute integration tests.."
     mvn clean verify -B -Dtest=**/functionality/**/*
+    if [ $? -ne 0 ]; then
+      echo "❌ Integration tests failed. Exiting..."
+      exit_code=1
+    fi
     ;;
   *)
     echo "❌ Invalid test type: $TEST_TYPE"
     echo "Please use 'unit' or 'integration'"
-    exit 1
+      exit_code=1
     ;;
 esac
 
 # Clean up after test
 docker compose down
+exit $exit_code
