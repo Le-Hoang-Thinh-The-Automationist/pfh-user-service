@@ -1,13 +1,57 @@
 name: Call Service Workflow
 
 on:
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
 
 jobs:
+  set-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.determine.outputs.environment }}
+    steps:
+      - id: determine
+        name: Categorize deployment's environment according to git branch
+        run: |
+          DEPLOYMENT_ENV=Feature
+          case "${{ github.ref_name }}" in
+            dev)
+              echo "environment=Development" >> $GITHUB_OUTPUT
+              DEPLOYMENT_ENV=Development
+              ;;
+            qa)
+              echo "environment=QA" >> $GITHUB_OUTPUT
+              DEPLOYMENT_ENV=QA
+              ;;
+            stag)
+              echo "environment=UAT" >> $GITHUB_OUTPUT
+              DEPLOYMENT_ENV=UAT
+              ;;
+            prod)
+              echo "environment=Production" >> $GITHUB_OUTPUT
+              DEPLOYMENT_ENV=Production
+              ;;
+            *)
+              echo "environment=Feature" >> $GITHUB_OUTPUT
+              DEPLOYMENT_ENV=Feature
+              ;;
+          esac
+          echo "The matching deployment's environment is $DEPLOYMENT_ENV"
+
+
   call-service-workflow:
-    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/service-workflow.yml@main
+    needs: set-environment
+    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/service-workflow.yml@feature/1-pipeline-cicd-pipeline-application-create-a-brand-new-template-for-github-action
     with:
-      environment: Production
-      service-name: my-awesome-service
+      # Mandatory inputs
+      environment: ${{ needs.set-environment.outputs.environment }}
+      service-name: pfh-user-service
+
+      # Custom
+      custom-test-script: ./services-functionaliy-test.sh -t unit
+      custom-build-script: services-functionaliy-test.sh -t int
     secrets:
       deploy_token: ${{ secrets.DEPLOY_TOKEN }}
+
