@@ -43,7 +43,7 @@ jobs:
 
   call-service-workflow:
     needs: set-environment
-    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/service-workflow.yml@feature/1-pipeline-cicd-pipeline-application-create-a-brand-new-template-for-github-action
+    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/service-workflow.yml@main
     with:
       environment: ${{ needs.set-environment.outputs.environment }}
     secrets:
