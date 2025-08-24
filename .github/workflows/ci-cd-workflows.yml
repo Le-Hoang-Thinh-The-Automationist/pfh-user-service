@@ -46,6 +46,7 @@ jobs:
     uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/service-workflow.yml@feature/1-pipeline-cicd-pipeline-application-create-a-brand-new-template-for-github-action
     with:
       environment: ${{ needs.set-environment.outputs.environment }}
+      service-name: pfh-user-service
     secrets:
       deploy_token: ${{ secrets.DEPLOY_TOKEN }}
 
