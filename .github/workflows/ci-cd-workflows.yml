@@ -45,8 +45,13 @@ jobs:
     needs: set-environment
     uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/service-workflow.yml@feature/1-pipeline-cicd-pipeline-application-create-a-brand-new-template-for-github-action
     with:
+      # Mandatory inputs
       environment: ${{ needs.set-environment.outputs.environment }}
       service-name: pfh-user-service
+
+      # Custom
+      custom-test-script: ./services-functionaliy-test.sh -t unit
+      custom-build-script: services-functionaliy-test.sh -t int
     secrets:
       deploy_token: ${{ secrets.DEPLOY_TOKEN }}
 
