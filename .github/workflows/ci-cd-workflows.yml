@@ -1,6 +1,7 @@
 name: Call Service Workflow
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - '**'
