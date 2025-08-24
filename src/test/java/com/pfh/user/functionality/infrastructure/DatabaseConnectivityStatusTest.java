@@ -6,7 +6,7 @@
  *
  *      ✅ **Acceptance Criteria:**
  *
- *          * **AC.1:** Endpoint `/db/status` (or equivalent) is available.
+ *          * **AC.1:** Endpoint `/actuator/db-status` (or equivalent) is available.
  *          * **AC.2:** Returns HTTP `200` when DB is reachable.
  *          * **AC.3:** JSON response includes `{ "status": "connected", "db": "postgresql" }`.
  *          * **AC.4:** Returns HTTP `503` if DB is unreachable.
@@ -43,7 +43,7 @@ class DatabaseConnectivityStatusTest {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    // * **AC.1:** Endpoint `/db/status` (or equivalent) is available.
+    // * **AC.1:** Endpoint `/actuator/db-status` (or equivalent) is available.
     // * **AC.2:** Returns HTTP `200` when DB is reachable.
     // * **AC.3:** JSON response includes `{ "status": "connected", "db": "postgresql" }`.
     void whenDbIsReachable_thenStatus200AndConnectedJson() throws Exception {
@@ -51,7 +51,7 @@ class DatabaseConnectivityStatusTest {
         when(jdbcTemplate.queryForObject("SELECT 1", Integer.class))
             .thenReturn(1);
 
-        mockMvc.perform(get("/db/status"))
+        mockMvc.perform(get("/actuator/db-status"))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.status").value("connected"))
@@ -65,7 +65,7 @@ class DatabaseConnectivityStatusTest {
         when(jdbcTemplate.queryForObject("SELECT 1", Integer.class))
             .thenThrow(new DataAccessException("DB down") {});
 
-        mockMvc.perform(get("/db/status"))
+        mockMvc.perform(get("/actuator/db-status"))
             .andExpect(status().isServiceUnavailable());
     }
 }

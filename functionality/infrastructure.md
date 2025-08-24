@@ -8,7 +8,7 @@
 
 ✅ **Acceptance Criteria:**
 
-- [ ] **AC.1:** Endpoint `/db/status` (or equivalent) is available.
+- [ ] **AC.1:** Endpoint `/actuator/db-status` (or equivalent) is available.
 - [ ] **AC.2:** Returns HTTP `200` when DB is reachable.
 - [ ] **AC.3:** JSON response includes `{ "status": "connected", "db": "postgresql" }`.
 - [ ] **AC.4:** Returns HTTP `503` if DB is unreachable.
