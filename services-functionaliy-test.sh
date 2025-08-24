@@ -57,4 +57,3 @@ esac
 
 # Clean up after test
 docker compose down
-docker rmi $APP_NAME
