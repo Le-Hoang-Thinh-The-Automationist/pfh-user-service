@@ -15,7 +15,7 @@ jobs:
       - id: determine
         name: Categorize deployment's environment according to git branch
         run: |
-          $DEPLOYMENT_ENV=Feature
+          DEPLOYMENT_ENV=Feature
           case "${{ github.ref_name }}" in
             dev)
               echo "environment=Development" >> $GITHUB_OUTPUT
