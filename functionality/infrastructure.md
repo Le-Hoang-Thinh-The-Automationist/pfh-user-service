@@ -1,20 +1,5 @@
 # Service Configuration & Infrastructure Status Monitoring
 
-## **User Story: Database Connectivity Status**
-
-* **As a** DevOps engineer
-* **I want** the User Service to expose an endpoint that checks PostgreSQL connectivity
-* **So that** I can verify the application is properly connected to the database
-
-✅ **Acceptance Criteria:**
-
-- [ ] **AC.1:** Endpoint `/actuator/db-status` (or equivalent) is available.
-- [ ] **AC.2:** Returns HTTP `200` when DB is reachable.
-- [ ] **AC.3:** JSON response includes `{ "status": "connected", "db": "postgresql" }`.
-- [ ] **AC.4:** Returns HTTP `503` if DB is unreachable.
-
----
-
 ## **User Story: Application Health Check**
 
 * **As a** system administrator
@@ -25,8 +10,9 @@
 
 - [ ] **AC.1:** `/actuator/health` endpoint is enabled.
 - [ ] **AC.2:** Returns HTTP `200` and `{ "status": "UP" }` when service is healthy.
-- [ ] **AC.3:** Includes DB, cache, and message broker health indicators (if configured).
+- [ ] **AC.3:** If DB is connected, it should response with  `{ "status": "connected", "db": "<CONNECTED_DATABASE_HOST>" }`
 - [ ] **AC.4:** Returns HTTP `503` when service is unhealthy.
+- [ ] **AC.5:** If DB is not connected, it should response with `{ "status": "disconnected", "db": "<CONNECTED_DATABASE_HOST>" }`
 
 ---
 
