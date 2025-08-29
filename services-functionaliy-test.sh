@@ -35,7 +35,6 @@ done
 
 # Setup environment and run tests
 echo "🔧 Setting up environment for $TEST_TYPE tests..."
-docker compose up -d postgre_db
 
 # Run testing
 echo "Execute the test for $TEST_TYPE tests..."
@@ -65,5 +64,4 @@ case "$TEST_TYPE" in
 esac
 
 # Clean up after test
-docker compose down
 exit $exit_code
