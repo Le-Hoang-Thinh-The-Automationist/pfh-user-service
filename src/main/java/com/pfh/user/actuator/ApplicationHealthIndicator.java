@@ -1,4 +1,4 @@
-package com.pfh.user.infrastructure.health;
+package com.pfh.user.actuator;
 
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
