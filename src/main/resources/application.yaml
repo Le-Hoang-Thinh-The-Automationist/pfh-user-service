@@ -1,0 +1,44 @@
+server:
+  port: ${APP_PORT:8080}
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRE_SQL_DB_HOST:localhost}:${POSTGRE_SQL_DB_PORT:5432}/${POSTGRE_SQL_DB_NAME:mydatabase}
+    username: ${POSTGRE_SQL_DB_USERNAME:myuser}
+    password: ${POSTGRE_SQL_DB_PASSWORD:mypassword}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maxLifetime: 30000        # 30 seconds (default is 30 min, too long for Testcontainers)
+      idleTimeout: 10000        # 10 seconds    
+      connection-timeout: 2000   # fast fail for status checks
+      validation-timeout: 1000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+management:
+  server:
+    port: ${APP_PORT:8080}
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: ["health", "info", "metrics", "env"]
+  health:
+    db:
+      enabled: false
+
+
+# Cutom configuration
+db:
+  dbHostSource: ${POSTGRE_SQL_DB_HOST:localhost}
+  dbPort: ${POSTGRE_SQL_DB_PORT:5432}
+  dbName: ${POSTGRE_SQL_DB_NAME:mydatabase}
