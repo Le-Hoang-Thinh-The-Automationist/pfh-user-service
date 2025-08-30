@@ -55,6 +55,14 @@
 			<version>1.18.34</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<!-- Encryption -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.78</version>
+		</dependency>
+
 		<!-- Database -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
