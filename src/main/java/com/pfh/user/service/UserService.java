@@ -1,8 +1,8 @@
 package com.pfh.user.service;
 
-import com.pfh.user.dto.RegistrationRequest;
-import com.pfh.user.dto.RegistrationResponse;
+import com.pfh.user.dto.RegistrationRequestDto;
+import com.pfh.user.dto.RegistrationResponseDto;
 
 public interface UserService {
-    RegistrationResponse registerUser(RegistrationRequest request);
+    RegistrationResponseDto registerUser(RegistrationRequestDto request);
 }

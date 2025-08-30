@@ -5,8 +5,9 @@ import lombok.Data;
 
 @Data
 @Builder
-public class RegistrationRequest {
+public class RegistrationRequestDto {
     private String username;
     private String password;
-    private String email;  
+    private String email;
+    private String confirmPassword;
 }

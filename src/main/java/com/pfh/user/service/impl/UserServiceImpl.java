@@ -1,7 +1,7 @@
 package com.pfh.user.service;
 
-import com.pfh.user.dto.RegistrationRequest;
-import com.pfh.user.dto.RegistrationResponse;
+import com.pfh.user.dto.RegistrationRequestDto;
+import com.pfh.user.dto.RegistrationResponseDto;
 import com.pfh.user.entity.UserEntity;
 import com.pfh.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
             new Argon2PasswordEncoder(16, 32, 2, 1 << 16, 3);
 
     @Override
-    public RegistrationResponse registerUser(RegistrationRequest request) {
+    public RegistrationResponseDto registerUser(RegistrationRequestDto request) {
         // Encode password
         String hashedPassword = encoder.encode(request.getPassword());
 
@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
         UserEntity saved = userRepository.save(user);
 
         // Return dummy response
-        return RegistrationResponse.builder()
+        return RegistrationResponseDto.builder()
                 .userId(saved.getId())
                 .username(saved.getUsername())
                 .message("User registered successfully")
