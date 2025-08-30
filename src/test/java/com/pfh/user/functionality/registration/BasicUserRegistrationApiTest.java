@@ -16,8 +16,8 @@
  */
 package com.pfh.user.functionality.registration;
 
-import com.pfh.user.dto.RegistrationRequest;
-import com.pfh.user.dto.RegistrationResponse;
+import com.pfh.user.dto.RegistrationRequestDto;
+import com.pfh.user.dto.RegistrationResponseDto;
 import com.pfh.user.repository.UserRepository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,13 +56,13 @@ class BasicUserRegistrationApiTest {
 
     private static final String REGISTRATION_ENDPOINT = "/api/auth/register";
     
-    private RegistrationRequest validRegistrationRequest;
+    private RegistrationRequestDto validRegistrationRequest;
 
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
         
-        validRegistrationRequest = RegistrationRequest.builder()
+        validRegistrationRequest = RegistrationRequestDto.builder()
                 .email("john.doe@example.com")
                 .password("SecurePassword123!")
                 .confirmPassword("SecurePassword123!")
@@ -90,7 +90,7 @@ class BasicUserRegistrationApiTest {
 
         // Verify response contains valid UUID
         String responseBody = result.getResponse().getContentAsString();
-        RegistrationResponse response = objectMapper.readValue(responseBody, RegistrationResponse.class);
+        RegistrationResponseDto response = objectMapper.readValue(responseBody, RegistrationResponseDto.class);
         
         assertThat(response.getUserId()).isNotNull();
         assertThat(response.getUserId().toString()).hasSize(36); // UUID format
@@ -117,7 +117,7 @@ class BasicUserRegistrationApiTest {
 
         for (String invalidEmail : invalidEmails) {
             // Given
-            RegistrationRequest request = RegistrationRequest.builder()
+            RegistrationRequestDto request = RegistrationRequestDto.builder()
                     .email(invalidEmail)
                     .password("SecurePassword123!")
                     .confirmPassword("SecurePassword123!")
@@ -151,7 +151,7 @@ class BasicUserRegistrationApiTest {
 
         for (String shortPassword : shortPasswords) {
             // Given
-            RegistrationRequest request = RegistrationRequest.builder()
+            RegistrationRequestDto request = RegistrationRequestDto.builder()
                     .email("test@example.com")
                     .password(shortPassword)
                     .confirmPassword(shortPassword)
@@ -176,7 +176,7 @@ class BasicUserRegistrationApiTest {
     // * AC.3: Password validation includes confirmation matching
     void passwordMismatch_ShouldReturn400() throws Exception {
         // Given
-        RegistrationRequest request = RegistrationRequest.builder()
+        RegistrationRequestDto request = RegistrationRequestDto.builder()
                 .email("test@example.com")
                 .password("SecurePassword123!")
                 .confirmPassword("DifferentPassword456!")
@@ -208,7 +208,7 @@ class BasicUserRegistrationApiTest {
                 .andExpect(status().isCreated());
 
         // When - Second registration with same email
-        RegistrationRequest duplicateRequest = RegistrationRequest.builder()
+        RegistrationRequestDto duplicateRequest = RegistrationRequestDto.builder()
                 .email("john.doe@example.com") // Same email
                 .password("AnotherSecurePassword456!")
                 .confirmPassword("AnotherSecurePassword456!")
@@ -232,7 +232,7 @@ class BasicUserRegistrationApiTest {
     // * AC.1: POST endpoint validates required fields
     void missingRequiredFields_ShouldReturn400() throws Exception {
         // Given - Empty request
-        RegistrationRequest emptyRequest = RegistrationRequest.builder().build();
+        RegistrationRequestDto emptyRequest = RegistrationRequestDto.builder().build();
         String requestBody = objectMapper.writeValueAsString(emptyRequest);
 
         // When & Then
@@ -301,7 +301,7 @@ class BasicUserRegistrationApiTest {
     // * AC.4: Successful registration normalizes email
     void caseInsensitiveEmail_ShouldNormalizeAndSucceed() throws Exception {
         // Given
-        RegistrationRequest request = RegistrationRequest.builder()
+        RegistrationRequestDto request = RegistrationRequestDto.builder()
                 .email("JOHN.DOE@EXAMPLE.COM")
                 .password("SecurePassword123!")
                 .confirmPassword("SecurePassword123!")

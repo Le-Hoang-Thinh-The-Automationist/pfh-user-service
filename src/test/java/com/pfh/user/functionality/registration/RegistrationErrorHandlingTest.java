@@ -16,7 +16,9 @@
 package com.example.registration;
 
 import com.pfh.user.service.UserService;
-import com.pfh.user.dto.RegistrationRequest;
+import com.pfh.user.dto.RegistrationRequestDto;
+import com.pfh.user.exception.DuplicateResourceException;
+import com.pfh.user.exception.RateLimitExceededException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,9 +55,9 @@ class RegistrationErrorHandlingTest {
     @MockBean
     private UserService userService;
 
-    private static final String ENDPOINT_URL = "/api/register";
+    private static final String ENDPOINT_URL = "/api/auth/register";
 
-    private RegistrationRequest validRequest;
+    private RegistrationRequestDto validRequest;
 
     @BeforeEach
     void setUp() {

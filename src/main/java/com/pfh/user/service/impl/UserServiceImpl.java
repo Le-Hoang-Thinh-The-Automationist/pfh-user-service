@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
             new Argon2PasswordEncoder(16, 32, 2, 1 << 16, 3);
 
     @Override
-    public RegistrationResponseDto registerUser(RegistrationRequestDto request) {
+    public RegistrationResponseDto register(RegistrationRequestDto request) {
         // Encode password
         String hashedPassword = encoder.encode(request.getPassword());
 
