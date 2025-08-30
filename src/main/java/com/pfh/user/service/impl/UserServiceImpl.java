@@ -5,6 +5,8 @@ import com.pfh.user.dto.RegistrationResponseDto;
 import com.pfh.user.entity.UserEntity;
 import com.pfh.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import com.pfh.user.exception.DuplicateEmailException;
+
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,16 +22,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public RegistrationResponseDto register(RegistrationRequestDto request) {
-        // Encode password
-        String hashedPassword = encoder.encode(request.getPassword());
+        // Check if the email exist
+        if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
+            throw new DuplicateEmailException(request.getEmail());
+        }  
 
         // Save entity
-        UserEntity user = UserEntity.builder()
+        UserEntity saved = userRepository.save(
+                UserEntity.builder()
                 .username(request.getUsername())
-                .password(hashedPassword)
-                .build();
-
-        UserEntity saved = userRepository.save(user);
+                .passwordHash(encoder.encode(request.getPassword()))
+                .build()
+        );
 
         // Return dummy response
         return RegistrationResponseDto.builder()

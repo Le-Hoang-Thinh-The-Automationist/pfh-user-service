@@ -119,7 +119,7 @@ class BasicUserRegistrationApiTest {
         assertThat(response.getRegistrationId()).isNotNull();
         
         // Verify user was created in database
-        assertThat(userRepository.findByEmail("john.doe@example.com")).isPresent();
+        assertThat(userRepository.findByEmailIgnoreCase("john.doe@example.com")).isPresent();
     }
 
     @Test
@@ -339,7 +339,7 @@ class BasicUserRegistrationApiTest {
                 .andReturn();
 
         // Verify email is normalized to lowercase in database
-        assertThat(userRepository.findByEmail("john.doe@example.com")).isPresent();
-        assertThat(userRepository.findByEmail("JOHN.DOE@EXAMPLE.COM")).isEmpty();
+        assertThat(userRepository.findByEmailIgnoreCase("john.doe@example.com")).isPresent();
+        assertThat(userRepository.findByEmailIgnoreCase("JOHN.DOE@EXAMPLE.COM")).isEmpty();
     }
 }

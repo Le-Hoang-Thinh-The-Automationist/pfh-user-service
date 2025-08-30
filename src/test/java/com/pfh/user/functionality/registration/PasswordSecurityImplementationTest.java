@@ -165,7 +165,7 @@ class PasswordSecurityImplementationTest {
         // Verify in DB
         Optional<UserEntity> savedUser = userRepository.findById(userId);
         assertThat(savedUser).isPresent();
-        assertThat(savedUser.get().getPassword()).isNotEqualTo(rawPassword); // never stored as plaintext
-        assertThat(savedUser.get().getPassword()).startsWith("$argon2id$"); // properly hashed
+        assertThat(savedUser.get().getPasswordHash()).isNotEqualTo(rawPassword); // never stored as plaintext
+        assertThat(savedUser.get().getPasswordHash()).startsWith("$argon2id$"); // properly hashed
     }
 }
