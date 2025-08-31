@@ -23,8 +23,4 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response); 
     }
 
-    @ExceptionHandler(DuplicateEmailException.class)
-    public ResponseEntity<String> handleDuplicate(DuplicateEmailException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-    }
 }
