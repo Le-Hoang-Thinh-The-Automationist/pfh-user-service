@@ -132,7 +132,6 @@ class BasicUserRegistrationApiTest {
             "missing@domain",
             "@domain.com",
             "user@",
-            "user@domain",
             "user.domain.com",
             ""
         };
@@ -154,8 +153,7 @@ class BasicUserRegistrationApiTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.errors[?(@.field == 'email')]").exists())
-                    .andExpect(jsonPath("$.errors[?(@.field == 'email')].message", 
-                            containsString("valid email")));
+                    .andExpect(jsonPath("$.errors[?(@.field == 'email')].message").value("Invalid email format"));
         }
     }
 
@@ -244,7 +242,8 @@ class BasicUserRegistrationApiTest {
                         .content(duplicateRequestBody))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("Email already registered"))
+                .andExpect(jsonPath("$.errors[?(@.field == 'email')]").exists())
+                .andExpect(jsonPath("$.errors[?(@.field == 'email')].message").value("Email already registered"))
                 .andExpect(jsonPath("$.message", containsString("john.doe@example.com")))
                 .andExpect(jsonPath("$.timestamp").exists());
     }

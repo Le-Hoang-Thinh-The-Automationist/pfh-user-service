@@ -11,7 +11,7 @@
 ✅ **Acceptance Criteria:**
 
 - [ ] **AC.1:** `POST /api/auth/register` endpoint accepts email and password
-- [ ] **AC.2:** Email format validation returns `400 Bad Request` for invalid emails
+- [X] **AC.2:** Email format validation returns `400 Bad Request` for invalid emails
 - [ ] **AC.3:** Password complexity validation enforces minimum 12 characters
 - [ ] **AC.4:** Successful registration returns `201 Created` with user ID
 - [X] **AC.5:** Duplicate email registration returns `409 Conflict`

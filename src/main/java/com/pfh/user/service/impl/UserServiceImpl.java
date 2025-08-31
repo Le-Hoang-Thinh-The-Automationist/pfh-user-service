@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
         // Save entity
         UserEntity saved = userRepository.save(
                 UserEntity.builder()
-                .email(request.getEmail())
+                .email(request.getEmail().toLowerCase())
                 .passwordHash(encoder.encode(request.getPassword()))
                 .build()
         );
