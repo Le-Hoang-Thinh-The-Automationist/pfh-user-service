@@ -10,9 +10,6 @@ import lombok.Data;
 @Data
 @Builder
 public class RegistrationRequestDto {
-    
-    @NotBlank
-    private String username;
  
     @NotBlank
     @Email(message = "Invalid email format")    

@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
         // Save entity
         UserEntity saved = userRepository.save(
                 UserEntity.builder()
-                .username(request.getUsername())
+                .email(request.getEmail())
                 .passwordHash(encoder.encode(request.getPassword()))
                 .build()
         );
@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
         // Return dummy response
         return RegistrationResponseDto.builder()
                 .userId(saved.getId())
-                .username(saved.getUsername())
+                .email(saved.getEmail())
                 .message("User registered successfully")
                 .build();
     }
