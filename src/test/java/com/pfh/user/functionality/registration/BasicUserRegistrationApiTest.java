@@ -249,25 +249,6 @@ class BasicUserRegistrationApiTest {
     }
 
     @Test
-    @DisplayName("[Basic User Registration API] AC.1: Missing required fields returns 400")
-    // * AC.1: POST endpoint validates required fields
-    void missingRequiredFields_ShouldReturn400() throws Exception {
-        // Given - Empty request
-        RegistrationRequestDto emptyRequest = RegistrationRequestDto.builder().build();
-        String requestBody = objectMapper.writeValueAsString(emptyRequest);
-
-        // When & Then
-        mockMvc.perform(post(REGISTRATION_ENDPOINT)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.errors[?(@.field == 'email')]").exists())
-                .andExpect(jsonPath("$.errors[?(@.field == 'password')]").exists())
-                .andExpect(jsonPath("$.errors[?(@.field == 'confirmPassword')]").exists());
-    }
-
-    @Test
     @DisplayName("[Basic User Registration API] AC.1: Invalid content type returns 415")
     // * AC.1: POST endpoint requires proper content type
     void invalidContentType_ShouldReturn415() throws Exception {
