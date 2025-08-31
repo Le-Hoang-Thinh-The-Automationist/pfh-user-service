@@ -2,9 +2,11 @@ package com.pfh.user.exception;
 
 import com.pfh.user.dto.ErrorResponseDto;
 import com.pfh.user.dto.FieldErrorDto;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -18,6 +20,23 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    // HTTP message not readable
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDto> handleValidationExceptions(HttpMessageNotReadableException ex) {
+        FieldErrorDto fieldError = new FieldErrorDto("syntax", "Malformed JSON");
+
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+            HttpStatus.BAD_REQUEST.value(),
+            "Malformed JSON",
+            Instant.now(),
+            Collections.singletonList(fieldError)
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse);
+    }
 
     // Handle duplicate email
     @ExceptionHandler(DuplicateEmailException.class)

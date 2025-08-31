@@ -277,7 +277,8 @@ class BasicUserRegistrationApiTest {
                         .content(malformedJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("Malformed JSON"))
+                .andExpect(jsonPath("$.errors[?(@.field == 'syntax')]").exists())
+                .andExpect(jsonPath("$.errors[?(@.field == 'syntax')].message").value("Malformed JSON"))
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 
