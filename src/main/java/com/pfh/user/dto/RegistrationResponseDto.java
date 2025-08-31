@@ -7,7 +7,6 @@ import lombok.Data;
 @Builder
 public class RegistrationResponseDto {
     private Long userId;          
-    private String registrationId; 
     private String email;
     private String message;
 }
