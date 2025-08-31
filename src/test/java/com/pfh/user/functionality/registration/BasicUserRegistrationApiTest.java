@@ -12,12 +12,14 @@
  *          * **AC.3:** Password complexity validation enforces minimum 12 characters
  *          * **AC.4:** Successful registration returns 201 Created with user ID
  *          * **AC.5:** Duplicate email registration returns 409 Conflict
+ *          * **AC.6:** Email should be case insensitive and be stored in the database in lower case.
  *
  */
 package com.pfh.user.functionality.registration;
 
 import com.pfh.user.dto.RegistrationRequestDto;
 import com.pfh.user.dto.RegistrationResponseDto;
+import com.pfh.user.entity.UserEntity;
 import com.pfh.user.repository.UserRepository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -296,9 +300,10 @@ class BasicUserRegistrationApiTest {
     }
 
     @Test
-    @DisplayName("[Basic User Registration API] AC.1 + AC.4: Case insensitive email handling")
+    @DisplayName("[Basic User Registration API] AC.1 + AC.4 + AC.6: Case insensitive email handling")
     // * AC.1: POST endpoint accepts email variations
     // * AC.4: Successful registration normalizes email
+    // * AC.6: The case insensitivity for email should be activated, and the email should be stored in lower case.
     void caseInsensitiveEmail_ShouldNormalizeAndSucceed() throws Exception {
         // Given
         RegistrationRequestDto request = RegistrationRequestDto.builder()
@@ -317,7 +322,11 @@ class BasicUserRegistrationApiTest {
                 .andReturn();
 
         // Verify email is normalized to lowercase in database
-        assertThat(userRepository.findByEmailIgnoreCase("john.doe@example.com")).isPresent();
-        assertThat(userRepository.findByEmailIgnoreCase("JOHN.DOE@EXAMPLE.COM")).isEmpty();
+        UserEntity lowerCaseEmailQuery = userRepository.findByEmailIgnoreCase("john.doe@example.com").orElse(null);;
+        UserEntity upperCaseEmailQuery = userRepository.findByEmailIgnoreCase("JOHN.DOE@EXAMPLE.COM").orElse(null);;
+
+        
+        assertThat(lowerCaseEmailQuery.getEmail().equals("john.doe@example.com")).isTrue();
+        assertThat(upperCaseEmailQuery.getEmail().equals("john.doe@example.com")).isTrue();
     }
 }

@@ -15,6 +15,7 @@
 - [X] **AC.3:** Password complexity validation enforces minimum 12 characters
 - [ ] **AC.4:** Successful registration returns `201 Created` with user ID
 - [X] **AC.5:** Duplicate email registration returns `409 Conflict`
+- [X] **AC.6:** Email should be case insensitive and be stored in the database in lower case.
 
 ---
 
