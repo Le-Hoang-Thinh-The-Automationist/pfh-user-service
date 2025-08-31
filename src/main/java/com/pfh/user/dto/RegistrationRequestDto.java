@@ -1,0 +1,36 @@
+package com.pfh.user.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class RegistrationRequestDto {
+ 
+    @Pattern(
+        /* 
+            Email format accepts:
+                - eaxmple_user@example.com
+            Email NOT accept:
+                - invalid-email 
+                - missing@domain 
+                - @domain.com 
+                - user@ 
+                - user.domain.com 
+        */ 
+        regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+        message = "Invalid email format"
+    ) 
+    private String email;
+
+    @Size(min = 12, message = "Password must be at least 12 characters long")
+    private String password;
+    
+    @NotBlank
+    private String confirmPassword;
+}
