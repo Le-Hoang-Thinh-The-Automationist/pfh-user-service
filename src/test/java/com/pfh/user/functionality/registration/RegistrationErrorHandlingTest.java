@@ -17,7 +17,7 @@ package com.pfh.user.functionality.registration;
 
 import com.pfh.user.service.UserService;
 import com.pfh.user.dto.RegistrationRequestDto;
-import com.pfh.user.exception.DuplicateResourceException;
+import com.pfh.user.exception.DuplicateEmailException;
 import com.pfh.user.exception.RateLimitExceededException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -142,7 +142,7 @@ class RegistrationErrorHandlingTest {
     void whenDuplicateEmail_then409AndHelpfulMessage() throws Exception {
         // Given
         given(userService.register(any()))
-            .willThrow(new DuplicateResourceException("email"));
+            .willThrow(new DuplicateEmailException("email"));
 
         String body = objectMapper.writeValueAsString(validRequest);
 
