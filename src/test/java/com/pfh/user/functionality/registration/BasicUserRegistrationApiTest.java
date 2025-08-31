@@ -186,8 +186,7 @@ class BasicUserRegistrationApiTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.errors[?(@.field == 'password')]").exists())
-                    .andExpect(jsonPath("$.errors[?(@.field == 'password')].message", 
-                            containsString("at least 12 characters")));
+                    .andExpect(jsonPath("$.errors[?(@.field == 'password')].message").value("Password must be at least 12 characters long"));
         }
     }
 
@@ -211,8 +210,7 @@ class BasicUserRegistrationApiTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.errors[?(@.field == 'confirmPassword')]").exists())
-                .andExpect(jsonPath("$.errors[?(@.field == 'confirmPassword')].message", 
-                        containsString("Passwords do not match")));
+                .andExpect(jsonPath("$.errors[?(@.field == 'confirmPassword')].message").value("Passwords do not match"));
     }
 
     @Test

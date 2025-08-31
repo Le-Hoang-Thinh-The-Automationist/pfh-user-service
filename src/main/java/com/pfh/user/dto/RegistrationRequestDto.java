@@ -28,7 +28,6 @@ public class RegistrationRequestDto {
     ) 
     private String email;
 
-    @NotBlank
     @Size(min = 12, message = "Password must be at least 12 characters long")
     private String password;
     

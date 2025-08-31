@@ -6,6 +6,7 @@ import com.pfh.user.entity.UserEntity;
 import com.pfh.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import com.pfh.user.exception.DuplicateEmailException;
+import com.pfh.user.exception.PasswordMismatchException;
 
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,11 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
             throw new DuplicateEmailException(request.getEmail());
         }  
+
+        // Check if the password and the confirmed password matches
+        if (!request.getPassword().equals(request.getConfirmPassword())){
+            throw new PasswordMismatchException();
+        }
 
         // Save entity
         UserEntity saved = userRepository.save(
