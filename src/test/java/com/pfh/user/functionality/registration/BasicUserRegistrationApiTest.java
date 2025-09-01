@@ -163,12 +163,14 @@ class BasicUserRegistrationApiTest {
     @DisplayName("[Basic User Registration API] AC.3: Short password returns 400")
     // * AC.3: Password complexity validation enforces minimum 12 characters
     void shortPassword_ShouldReturn400() throws Exception {
-        // Given - Passwords shorter than 12 characters
+        // Given - Passwords shorter than 12 characters (not common password, as it will be check in PasswordSecurityImplementationTest)
         String[] shortPasswords = {
             "short",
-            "password",
-            "12345678901", // 11 characters
-            ""
+            "hallo",
+            "124878901", // 11 characters
+            // The blank cases shall be covered by PasswordSecurityImplementationTest
+            // "",
+            "!@#$%"
         };
 
         for (String shortPassword : shortPasswords) {
@@ -188,7 +190,8 @@ class BasicUserRegistrationApiTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.errors[?(@.field == 'password')]").exists())
-                    .andExpect(jsonPath("$.errors[?(@.field == 'password')].message").value("Password must be at least 12 characters long"));
+                    .andExpect(jsonPath("$.errors[?(@.field == 'password')].message").value("Password is too weak"))
+                    .andExpect(jsonPath("$.message").value("Password must be at least 12 characters long"));
         }
     }
 

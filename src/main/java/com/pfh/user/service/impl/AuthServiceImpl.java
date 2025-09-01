@@ -2,6 +2,7 @@ package com.pfh.user.service.impl;
 
 import com.pfh.user.dto.RegistrationRequestDto;
 import com.pfh.user.dto.RegistrationResponseDto;
+import com.pfh.user.exception.PasswordIsWeakException;
 import com.pfh.user.exception.PasswordMismatchException;
 import com.pfh.user.service.AuthService;
 import com.pfh.user.service.UserService;
@@ -21,8 +22,21 @@ public class AuthServiceImpl implements AuthService {
     private final Argon2PasswordEncoder encoder =
             new Argon2PasswordEncoder(16, 32, 2, 1 << 16, 3);
 
+
+    private static final int MINIMUM_PASSWORD_LENGTH=12;
+
+    private static void checkPasswordStrength(String inputPassword){
+        // Check length
+        if (inputPassword.length() < MINIMUM_PASSWORD_LENGTH) {
+            throw new PasswordIsWeakException("Password must be at least 12 characters long");
+        }
+    }
+
     @Override
     public RegistrationResponseDto register(RegistrationRequestDto request) {
+        // Check for password if it is strong enough
+        checkPasswordStrength(request.getPassword());
+
         // Check if the password and the confirmed password matches
         if (!request.getPassword().equals(request.getConfirmPassword())){
             throw new PasswordMismatchException();

@@ -28,7 +28,7 @@ public class RegistrationRequestDto {
     ) 
     private String email;
 
-    @Size(min = 12, message = "Password must be at least 12 characters long")
+    // All of password security shall be implemented in AuthService
     private String password;
     
     @NotBlank

@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /******************************* INPUT FORMAT HANDLING   *******************************/
     // HTTP message not readable
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponseDto> handleValidationExceptions(HttpMessageNotReadableException ex) {
@@ -38,24 +40,7 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }
 
-    // Handle duplicate email
-    @ExceptionHandler(DuplicateEmailException.class)
-    public ResponseEntity<ErrorResponseDto> handleDuplicateEmail(DuplicateEmailException ex) {
-        FieldErrorDto fieldError = new FieldErrorDto("email", "Email already registered");
-
-        ErrorResponseDto errorResponse = new ErrorResponseDto(
-            HttpStatus.CONFLICT.value(),          
-            ex.getMessage(),                      
-            Instant.now(),                        
-            Collections.singletonList(fieldError) 
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(errorResponse);
-    }
-
+    // Request input are invalid
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleValidationExceptions(MethodArgumentNotValidException ex) {
         List<FieldErrorDto> fieldErrors = ex.getBindingResult()
@@ -77,11 +62,50 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }
 
+    /******************************* EMAIL HANDLING   *******************************/
+    // Handle duplicate email
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ErrorResponseDto> handleDuplicateEmail(DuplicateEmailException ex) {
+        FieldErrorDto fieldError = new FieldErrorDto("email", "Email already registered");
 
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+            HttpStatus.CONFLICT.value(),          
+            ex.getMessage(),                      
+            Instant.now(),                        
+            Collections.singletonList(fieldError) 
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse);
+    }
+
+
+
+    /******************************* PASSWORD HANDLING   *******************************/
     // Password Mismatch
     @ExceptionHandler(PasswordMismatchException.class)
     public ResponseEntity<ErrorResponseDto> handlePasswordMismatch(PasswordMismatchException ex) {
         FieldErrorDto fieldError = new FieldErrorDto("confirmPassword", ex.getMessage());
+
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+            HttpStatus.BAD_REQUEST.value(),          
+            ex.getMessage(),                      
+            Instant.now(),                        
+            Collections.singletonList(fieldError) 
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse);
+    }
+
+    // Password is too weak
+    @ExceptionHandler(PasswordIsWeakException.class)
+    public ResponseEntity<ErrorResponseDto> handlePasswordMismatch(PasswordIsWeakException ex) {
+        FieldErrorDto fieldError = new FieldErrorDto("password", "Password is too weak");
 
         ErrorResponseDto errorResponse = new ErrorResponseDto(
             HttpStatus.BAD_REQUEST.value(),          
