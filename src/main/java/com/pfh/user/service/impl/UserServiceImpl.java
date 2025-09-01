@@ -1,14 +1,14 @@
-package com.pfh.user.service;
+package com.pfh.user.service.impl;
 
 import com.pfh.user.dto.RegistrationRequestDto;
 import com.pfh.user.dto.RegistrationResponseDto;
 import com.pfh.user.entity.UserEntity;
 import com.pfh.user.repository.UserRepository;
+import com.pfh.user.service.UserService;
+
 import lombok.RequiredArgsConstructor;
 import com.pfh.user.exception.DuplicateEmailException;
-import com.pfh.user.exception.PasswordMismatchException;
 
-import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,27 +17,18 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
-    // Dummy encoder using Argon2id with OWASP-aligned parameters
-    private final Argon2PasswordEncoder encoder =
-            new Argon2PasswordEncoder(16, 32, 2, 1 << 16, 3);
-
     @Override
-    public RegistrationResponseDto register(RegistrationRequestDto request) {
+    public RegistrationResponseDto createUser(RegistrationRequestDto request) {
         // Check if the email exist
         if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
             throw new DuplicateEmailException(request.getEmail());
-        }  
-
-        // Check if the password and the confirmed password matches
-        if (!request.getPassword().equals(request.getConfirmPassword())){
-            throw new PasswordMismatchException();
         }
 
         // Save entity
         UserEntity saved = userRepository.save(
                 UserEntity.builder()
                 .email(request.getEmail().toLowerCase())
-                .passwordHash(encoder.encode(request.getPassword()))
+                .passwordHash(request.getPassword())
                 .build()
         );
 

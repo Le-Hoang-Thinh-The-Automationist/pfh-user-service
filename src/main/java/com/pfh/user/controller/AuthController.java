@@ -2,8 +2,7 @@ package com.pfh.user.controller;
 
 import com.pfh.user.dto.RegistrationRequestDto;
 import com.pfh.user.dto.RegistrationResponseDto;
-import com.pfh.user.exception.DuplicateEmailException;
-import com.pfh.user.service.UserService;
+import com.pfh.user.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,11 +14,11 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userService;
+    private final AuthService authService;
 
     @PostMapping("/register")
     public ResponseEntity<RegistrationResponseDto> register(@Valid @RequestBody RegistrationRequestDto request) {
-        RegistrationResponseDto response = userService.register(request);
+        RegistrationResponseDto response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response); 
     }
 
