@@ -110,6 +110,8 @@ class BasicUserRegistrationApiTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.userId", notNullValue()))
+                .andExpect(jsonPath("$.email").value(validRegistrationRequest.getEmail()))
+                .andExpect(jsonPath("$.message").value("User registered successfully"))
                 // .andExpect(jsonPath("$.status").value("PENDING_VERIFICATION"))
                 .andReturn();
 
