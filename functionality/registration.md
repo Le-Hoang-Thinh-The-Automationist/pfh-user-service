@@ -29,11 +29,12 @@
 
 ✅ **Acceptance Criteria:**
 
-- [ ] **AC.1:** Passwords are hashed using Argon2id algorithm
-- [ ] **AC.2:** Password strength validation checks against common password dictionaries
-- [ ] **AC.3:** Salt is unique for each password hash
-- [ ] **AC.4:** Original passwords are never stored in plain text
-- [ ] **AC.5:** Password hashing parameters follow OWASP recommendations
+- [X] **AC.1:** Passwords are hashed using Argon2id algorithm
+- [X] **AC.2:** Password strength validation checks against common password dictionaries
+- [X] **AC.3:** Salt is unique for each password hash
+- [X] **AC.4:** Original passwords are never stored in plain text
+- [X] **AC.5:** Password hashing parameters follow OWASP recommendations
+- [X] **AC.6:** Password must contain at least one uppercase, lowercase, digit, and special character
 
 ---
 ## **User Story : Registration Error Handling**

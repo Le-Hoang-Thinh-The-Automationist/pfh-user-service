@@ -30,35 +30,20 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import com.pfh.user.functionality.abstraction.AbstractIntegrationTest;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Testcontainers
-class ApplicationHealthCheckTest {
+class ApplicationHealthCheckTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Value("${db.dbHostSource}")
     private String dbHostSource;
-    
-    // Start a PostgreSQL Testcontainer
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
-        .withDatabaseName("testdb")
-        .withUsername("test")
-        .withPassword("test");
-
-    // Dynamically override Spring datasource properties
-    @DynamicPropertySource
-    static void configureDataSource(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("spring.datasource.driver-class-name", postgres::getDriverClassName);
-    }
 
     @Test
     @DisplayName("[Application Health Check] AC.1: /actuator/health endpoint is enabled")
@@ -92,18 +77,18 @@ class ApplicationHealthCheckTest {
     // * AC.6: If DB is not connected, it should provide information like { "connectionStatus": "disconnected", "dbHostSource": "<CONNECTED_DATABASE_HOST>" }`.
     void whenDbDisconnected_thenServiceUnhealthy() throws Exception {
         // Pause DB container to simulate failure
-        postgres.getDockerClient().pauseContainerCmd(postgres.getContainerId()).exec();
+        pauseContainer();
 
         try {
-                mockMvc.perform(get("/actuator/health")
-                        .accept(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isServiceUnavailable())
-                        .andExpect(jsonPath("$.status").value("DOWN"))
-                        .andExpect(jsonPath("$.components.db.details.connectionStatus").value("disconnected"))
-                        .andExpect(jsonPath("$.components.db.details.dbHostSource").value(dbHostSource));
+            mockMvc.perform(get("/actuator/health")
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isServiceUnavailable())
+                    .andExpect(jsonPath("$.status").value("DOWN"))
+                    .andExpect(jsonPath("$.components.db.details.connectionStatus").value("disconnected"))
+                    .andExpect(jsonPath("$.components.db.details.dbHostSource").value(dbHostSource));
         } finally {
-                // Unpause so other tests don’t fail
-                postgres.getDockerClient().unpauseContainerCmd(postgres.getContainerId()).exec();
+            // Unpause so other tests don’t fail
+            unpauseContainer();
         }
     }
 }
