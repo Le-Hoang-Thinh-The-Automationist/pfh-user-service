@@ -107,6 +107,8 @@ class BasicUserRegistrationApiTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("[Basic User Registration API] AC.2: Invalid email format returns 400")
     // * AC.2: Email format validation returns 400 Bad Request for invalid emails
+    // [REUSED BY]:
+    // - RegistrationErrorHandlingTest.whenInvalidData_then400AndHelpfulMessage
     void invalidEmailFormat_ShouldReturn400() throws Exception {
         // Given - Invalid email formats
         String[] invalidEmails = {
@@ -142,6 +144,8 @@ class BasicUserRegistrationApiTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("[Basic User Registration API] AC.3: Short password returns 400")
     // * AC.3: Password complexity validation enforces minimum 12 characters
+    // [REUSED BY]:
+    // - RegistrationErrorHandlingTest.whenInvalidData_then400AndHelpfulMessage
     void shortPassword_ShouldReturn400() throws Exception {
         // Given - Passwords shorter than 12 characters (not common password, as it will be check in PasswordSecurityImplementationTest)
         String[] shortPasswords = {
@@ -178,6 +182,8 @@ class BasicUserRegistrationApiTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("[Basic User Registration API] AC.3: Password mismatch returns 400")
     // * AC.3: Password validation includes confirmation matching
+    // [REUSED BY]:
+    // - RegistrationErrorHandlingTest.whenInvalidData_then400AndHelpfulMessage
     void passwordMismatch_ShouldReturn400() throws Exception {
         // Given
         RegistrationRequestDto request = RegistrationRequestDto.builder()
@@ -201,6 +207,9 @@ class BasicUserRegistrationApiTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("[Basic User Registration API] AC.5: Duplicate email returns 409")
     // * AC.5: Duplicate email registration returns 409 Conflict
+    // [REUSED BY]:
+    // - RegistrationErrorHandlingTest.whenInvalidData_then400AndHelpfulMessage
+    // - RegistrationErrorHandlingTest.whenDuplicateEmail_then409AndHelpfulMessage
     void duplicateEmail_ShouldReturn409() throws Exception {
         // Given - First registration
         String requestBody = objectMapper.writeValueAsString(validRegistrationRequest);
@@ -234,6 +243,8 @@ class BasicUserRegistrationApiTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("[Basic User Registration API] AC.1: Invalid content type returns 415")
     // * AC.1: POST endpoint requires proper content type
+    // [REUSED BY]:
+    // - RegistrationErrorHandlingTest.whenUnsupportedMediaType_then415AndHelpfulMessage    
     void invalidContentType_ShouldReturn415() throws Exception {
         // Given
         String requestBody = objectMapper.writeValueAsString(validRegistrationRequest);
@@ -248,6 +259,8 @@ class BasicUserRegistrationApiTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("[Basic User Registration API] AC.1: Malformed JSON returns 400")
     // * AC.1: POST endpoint handles malformed JSON gracefully
+    // [REUSED BY]:
+    // - RegistrationErrorHandlingTest.whenInvalidData_then400AndHelpfulMessage
     void malformedJson_ShouldReturn400() throws Exception {
         // Given
         String malformedJson = "{ invalid json }";

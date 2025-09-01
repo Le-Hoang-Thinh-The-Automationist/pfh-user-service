@@ -47,8 +47,13 @@
 
 ✅ **Acceptance Criteria:**
 
-- [ ] **AC.1:** Validation errors return structured JSON with field-specific messages
+- [X] **AC.1:** Validation errors return structured JSON with field-specific messages
 - [ ] **AC.2:** Security errors return generic messages to prevent information disclosure
 - [ ] **AC.3:** HTTP status codes accurately reflect error types (400, 409, 429, 500)
-- [ ] **AC.4:** Error messages are user-friendly and actionable
+  - [X] **AC.3.1:** `400 Bad Request` is returned for invalid or missing input data
+  - [X] **AC.3.2:** `409 Conflict` is returned when a duplicate account (e.g., email already exists) is detected
+  - [ ] **AC.3.3:** `429 Too Many Requests` is returned when registration attempts exceed rate limits
+  - [ ] **AC.3.4:** `500 Internal Server Error` is returned for unexpected system or server failures
+  - [X] **AC.3.5**: `415 Unsupported Media Type` is returned when the request payload format or Content-Type header is not supported (e.g., sending XML instead of JSON)
+- [X] **AC.4:** Error messages are user-friendly and actionable
 - [ ] **AC.5:** Internal error details are logged separately for debugging
