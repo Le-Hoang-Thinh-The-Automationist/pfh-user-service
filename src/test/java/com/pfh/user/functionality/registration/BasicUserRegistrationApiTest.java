@@ -20,6 +20,7 @@ package com.pfh.user.functionality.registration;
 import com.pfh.user.dto.RegistrationRequestDto;
 import com.pfh.user.dto.RegistrationResponseDto;
 import com.pfh.user.entity.UserEntity;
+import com.pfh.user.functionality.abstraction.AbstractIntegrationTest;
 import com.pfh.user.repository.UserRepository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,16 +32,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -51,9 +46,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class BasicUserRegistrationApiTest {
+class BasicUserRegistrationApiTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -67,22 +61,6 @@ class BasicUserRegistrationApiTest {
     private static final String REGISTRATION_ENDPOINT = "/api/auth/register";
     
     private RegistrationRequestDto validRegistrationRequest;
-    
-    // Start a PostgreSQL Testcontainer
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
-        .withDatabaseName("testdb")
-        .withUsername("test")
-        .withPassword("test");
-
-    // Dynamically override Spring datasource properties
-    @DynamicPropertySource
-    static void configureDataSource(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("spring.datasource.driver-class-name", postgres::getDriverClassName);
-    }
 
     @BeforeEach
     void setUp() {
