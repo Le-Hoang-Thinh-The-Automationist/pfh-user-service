@@ -42,3 +42,7 @@ db:
   dbHostSource: ${POSTGRE_SQL_DB_HOST:localhost}
   dbPort: ${POSTGRE_SQL_DB_PORT:5432}
   dbName: ${POSTGRE_SQL_DB_NAME:mydatabase}
+
+security:
+  csrf:
+    enabled: ${CSRF_ENABLE:false}
