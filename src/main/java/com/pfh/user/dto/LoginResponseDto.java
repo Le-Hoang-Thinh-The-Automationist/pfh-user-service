@@ -1,0 +1,15 @@
+package com.pfh.user.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+
+import java.util.Map;
+
+@Data
+@Builder
+@AllArgsConstructor
+public class LoginResponseDto {
+    private String token;
+    private Map<String, Object> claims; // userId, email, roles, exp
+}

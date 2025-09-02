@@ -1,25 +1,31 @@
 package com.pfh.user.service.impl;
 
+import com.pfh.user.dto.LoginRequestDto;
+import com.pfh.user.dto.LoginResponseDto;
 import com.pfh.user.dto.RegistrationRequestDto;
 import com.pfh.user.dto.RegistrationResponseDto;
 import com.pfh.user.exception.PasswordIsWeakException;
 import com.pfh.user.exception.PasswordMismatchException;
+import com.pfh.user.service.AuditLogService;
 import com.pfh.user.service.AuthService;
 import com.pfh.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UserService userService;
+    private final AuditLogService auditLogService;
 
     // Dummy encoder using Argon2id with OWASP-aligned parameters
     private final Argon2PasswordEncoder encoder =
@@ -73,4 +79,34 @@ public class AuthServiceImpl implements AuthService {
 
         return userService.createUser(request);
     }    
+
+
+    // Dummy user for illustration
+    private final String dummyEmail = "user@example.com";
+    private final String dummyPasswordHash = new BCryptPasswordEncoder(12).encode("SecurePass123");
+
+    public LoginResponseDto login(LoginRequestDto request, String ip, String userAgent) {
+        if (!dummyEmail.equals(request.getEmail())) {
+            auditLogService.logLoginFailure(request.getEmail(), ip, "user_not_found");
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+        if (!encoder.matches(request.getPassword(), dummyPasswordHash)) {
+            auditLogService.logLoginFailure(request.getEmail(), ip, "invalid_credentials");
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        auditLogService.logLoginSuccess("1", request.getEmail(), ip, userAgent);
+
+        return LoginResponseDto.builder()
+                .token("dummy-jwt-token")
+                .claims(Map.of(
+                        "userId", "1",
+                        "email", request.getEmail(),
+                        "roles", new String[]{"USER"},
+                        "exp", System.currentTimeMillis() / 1000 + 900
+                ))
+                .build();
+    }
 }
