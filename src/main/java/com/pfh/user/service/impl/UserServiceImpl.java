@@ -2,13 +2,13 @@ package com.pfh.user.service.impl;
 
 import com.pfh.user.dto.auth.RegistrationRequestDto;
 import com.pfh.user.dto.auth.RegistrationResponseDto;
-
 import com.pfh.user.entity.UserEntity;
 import com.pfh.user.repository.UserRepository;
 import com.pfh.user.service.UserService;
-
-import lombok.RequiredArgsConstructor;
 import com.pfh.user.exception.DuplicateEmailException;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
@@ -39,5 +39,14 @@ public class UserServiceImpl implements UserService {
                 .email(saved.getEmail())
                 .message("User registered successfully")
                 .build();
+    }
+
+    @Override
+    public UserEntity getUser(String email){
+        return userRepository
+                .findByEmailIgnoreCase(email)
+                .orElseThrow(
+                    () -> new EntityNotFoundException("User Entity not found")
+                );
     }
 }
