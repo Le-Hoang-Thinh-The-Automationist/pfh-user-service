@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pfh.user.dto.auth.LoginRequestDto;
 import com.pfh.user.dto.auth.RegistrationRequestDto;
 import com.pfh.user.functionality.abstraction.AbstractIntegrationTest;
+import com.pfh.user.repository.UserRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,8 +42,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -60,17 +63,30 @@ class BasicJwtAuthenticationTest extends AbstractIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private static final String REGISTRATION_ENDPOINT = "/api/auth/register";
     private static final String LOGIN_URL = "/api/auth/login";
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private RegistrationRequestDto validRegistrationRequest;
     private LoginRequestDto validLogin;
 
     @BeforeEach
     void setUp() {
         // Assuming a test user is preloaded in DB:
-        // email = "user@example.com", password = "SecurePass123" (BCrypt ≥12 rounds)
+        userRepository.deleteAll();
+        
+        validRegistrationRequest = RegistrationRequestDto.builder()
+                .email("john.doe@example.com")
+                .password("SecurePassword123!")
+                .confirmPassword("SecurePassword123!")
+                .build();
+        
+
         validLogin = LoginRequestDto.builder()
-                .email("user@example.com")
-                .password("SecurePass123")
+                .email("john.doe@example.com")
+                .password("SecurePassword123!")
                 .build();
     }
 
@@ -78,12 +94,20 @@ class BasicJwtAuthenticationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("[Basic JWT Authentication] AC.1 - VP.1: Login with valid credentials returns JWT")
     void ac1vp1_LoginWithValidCredentials_ShouldReturnJwtToken() throws Exception {
-        var result = mockMvc.perform(post(LOGIN_URL)
+        // Given - The newly registered account existed in the DB
+        String requestBody = objectMapper.writeValueAsString(validRegistrationRequest);
+        mockMvc.perform(post(REGISTRATION_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated());
+        
+        // When
+        MvcResult result = mockMvc.perform(post(LOGIN_URL)
                 .contentType("application/json")
-                .content(objectMapper.writeValueAsString(validLogin)));
-
-        result.andExpect(status().isOk())
-              .andExpect(jsonPath("$.token").exists());
+                .content(objectMapper.writeValueAsString(validLogin)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.token").exists())
+            .andReturn();
     }
 
     @Test
@@ -94,12 +118,13 @@ class BasicJwtAuthenticationTest extends AbstractIntegrationTest {
                 .password("WrongPass")
                 .build();
 
-        var result = mockMvc.perform(post(LOGIN_URL)
+        MvcResult result = mockMvc.perform(post(LOGIN_URL)
                 .contentType("application/json")
-                .content(objectMapper.writeValueAsString(request)));
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error").value("Invalid credentials"))
+            .andReturn();
 
-        result.andExpect(status().isUnauthorized())
-              .andExpect(jsonPath("$.error").value("Invalid credentials"));
     }
 
     @Test
@@ -110,28 +135,28 @@ class BasicJwtAuthenticationTest extends AbstractIntegrationTest {
                 .password("SomePass123")
                 .build();
 
-        var result = mockMvc.perform(post(LOGIN_URL)
+        MvcResult result = mockMvc.perform(post(LOGIN_URL)
                 .contentType("application/json")
-                .content(objectMapper.writeValueAsString(request)));
-
-        result.andExpect(status().isUnauthorized())
-              .andExpect(jsonPath("$.error").value("Invalid credentials"));
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error").value("Invalid credentials"))
+            .andReturn();
     }
 
     // --- AC.2 Tests ---
     @Test
     @DisplayName("[Basic JWT Authentication] AC.2 - VP.1: JWT contains userId, email, roles, exp ≤ 15min")
     void ac2vp1_JwtPayloadContainsRequiredClaims_ShouldReturnValidClaims() throws Exception {
-        var result = mockMvc.perform(post(LOGIN_URL)
+        MvcResult result = mockMvc.perform(post(LOGIN_URL)
                 .contentType("application/json")
-                .content(objectMapper.writeValueAsString(validLogin)));
-
-        result.andExpect(status().isOk())
-              .andExpect(jsonPath("$.token").exists())
-              .andExpect(jsonPath("$.claims.userId").exists())
-              .andExpect(jsonPath("$.claims.email").value("user@example.com"))
-              .andExpect(jsonPath("$.claims.roles").isArray())
-              .andExpect(jsonPath("$.claims.exp").isNotEmpty());
+                .content(objectMapper.writeValueAsString(validLogin)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.token").exists())
+            .andExpect(jsonPath("$.claims.userId").exists())
+            .andExpect(jsonPath("$.claims.email").value("user@example.com"))
+            .andExpect(jsonPath("$.claims.roles").isArray())
+            .andExpect(jsonPath("$.claims.exp").isNotEmpty())
+            .andReturn();
         // NOTE: A deeper test could decode JWT and assert exp ≤ 900 seconds
     }
 
@@ -169,12 +194,12 @@ class BasicJwtAuthenticationTest extends AbstractIntegrationTest {
                 .password("BadPassword")
                 .build();
 
-        var result = mockMvc.perform(post(LOGIN_URL)
+        MvcResult result = mockMvc.perform(post(LOGIN_URL)
                 .contentType("application/json")
-                .content(objectMapper.writeValueAsString(request)));
-
-        result.andExpect(status().isUnauthorized())
-              .andExpect(jsonPath("$.error").value("Invalid credentials"));
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error").value("Invalid credentials"))
+            .andReturn();
     }
 
     // --- AC.5 Tests ---
