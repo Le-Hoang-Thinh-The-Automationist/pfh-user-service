@@ -90,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
         
         // Check if the email is registered
         try {
-            user = userService.getUser(request.getEmail());
+            user = userService.getUserByEmail(request.getEmail());
         } catch (EntityNotFoundException ex) {
             auditLogService.logLoginFailure(request.getEmail(), ip, "user_not_found");
             throw new CredentialInValidException("Invalid credentials");

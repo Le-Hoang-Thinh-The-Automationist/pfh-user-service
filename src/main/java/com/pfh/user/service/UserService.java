@@ -6,5 +6,6 @@ import com.pfh.user.entity.UserEntity;
 
 public interface UserService {
     RegistrationResponseDto createUser(RegistrationRequestDto request);
-    UserEntity getUser(String email);
+    UserEntity getUserById(long id);
+    UserEntity getUserByEmail(String email);
 }
