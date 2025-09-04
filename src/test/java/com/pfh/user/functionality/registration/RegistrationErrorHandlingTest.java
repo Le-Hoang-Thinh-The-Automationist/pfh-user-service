@@ -21,7 +21,7 @@
 package com.pfh.user.functionality.registration;
 
 import com.pfh.user.service.AuthService;
-import com.pfh.user.dto.RegistrationRequestDto;
+import com.pfh.user.dto.auth.RegistrationRequestDto;
 import com.pfh.user.exception.RateLimitExceededException;
 import com.pfh.user.functionality.abstraction.AbstractIntegrationTest;
 import com.fasterxml.jackson.databind.ObjectMapper;

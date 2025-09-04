@@ -1,9 +1,9 @@
 package com.pfh.user.service.impl;
 
-import com.pfh.user.dto.LoginRequestDto;
-import com.pfh.user.dto.LoginResponseDto;
-import com.pfh.user.dto.RegistrationRequestDto;
-import com.pfh.user.dto.RegistrationResponseDto;
+import com.pfh.user.dto.auth.LoginRequestDto;
+import com.pfh.user.dto.auth.LoginResponseDto;
+import com.pfh.user.dto.auth.RegistrationRequestDto;
+import com.pfh.user.dto.auth.RegistrationResponseDto;
 import com.pfh.user.exception.PasswordIsWeakException;
 import com.pfh.user.exception.PasswordMismatchException;
 import com.pfh.user.service.AuditLogService;

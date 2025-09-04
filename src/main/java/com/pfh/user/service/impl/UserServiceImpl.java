@@ -1,7 +1,8 @@
 package com.pfh.user.service.impl;
 
-import com.pfh.user.dto.RegistrationRequestDto;
-import com.pfh.user.dto.RegistrationResponseDto;
+import com.pfh.user.dto.auth.RegistrationRequestDto;
+import com.pfh.user.dto.auth.RegistrationResponseDto;
+
 import com.pfh.user.entity.UserEntity;
 import com.pfh.user.repository.UserRepository;
 import com.pfh.user.service.UserService;

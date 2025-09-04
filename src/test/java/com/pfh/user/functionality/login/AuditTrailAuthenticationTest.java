@@ -23,7 +23,7 @@
 
 package com.pfh.user.functionality.login;
 
-import com.pfh.user.dto.LoginRequestDto;
+import com.pfh.user.dto.auth.LoginRequestDto;
 import com.pfh.user.entity.AuditLogEntity;
 import com.pfh.user.functionality.abstraction.AbstractIntegrationTest;
 import com.pfh.user.repository.AuditLogRepository;

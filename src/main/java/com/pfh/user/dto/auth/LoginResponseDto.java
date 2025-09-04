@@ -1,4 +1,4 @@
-package com.pfh.user.dto;
+package com.pfh.user.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -32,7 +32,7 @@
 package com.pfh.user.functionality.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pfh.user.dto.LoginRequestDto;
+import com.pfh.user.dto.auth.LoginRequestDto;
 import com.pfh.user.functionality.abstraction.AbstractIntegrationTest;
 
 import org.junit.jupiter.api.BeforeEach;

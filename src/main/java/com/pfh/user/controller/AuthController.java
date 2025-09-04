@@ -1,7 +1,9 @@
 package com.pfh.user.controller;
 
-import com.pfh.user.dto.RegistrationRequestDto;
-import com.pfh.user.dto.RegistrationResponseDto;
+import com.pfh.user.dto.auth.LoginRequestDto;
+import com.pfh.user.dto.auth.LoginResponseDto;
+import com.pfh.user.dto.auth.RegistrationRequestDto;
+import com.pfh.user.dto.auth.RegistrationResponseDto;
 import com.pfh.user.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
