@@ -118,4 +118,23 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }
 
+    /******************************* USER HANDLING   *******************************/
+    // Invalid Credential
+    @ExceptionHandler(CredentialInValidException.class)
+    public ResponseEntity<ErrorResponseDto> handleUser(CredentialInValidException ex) {
+        FieldErrorDto fieldError = new FieldErrorDto("credential", ex.getMessage());
+
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+            HttpStatus.UNAUTHORIZED.value(),          
+            ex.getMessage(),                      
+            Instant.now(),                        
+            Collections.singletonList(fieldError) 
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse);
+    }    
+
 }
