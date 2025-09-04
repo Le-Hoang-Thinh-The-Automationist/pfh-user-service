@@ -7,4 +7,5 @@ import com.pfh.user.dto.auth.RegistrationResponseDto;
 
 public interface AuthService {
     RegistrationResponseDto register(RegistrationRequestDto request);
+    LoginResponseDto login(LoginRequestDto request, String ip, String userAgent);
 }

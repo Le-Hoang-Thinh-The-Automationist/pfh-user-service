@@ -4,12 +4,15 @@ import com.pfh.user.dto.auth.LoginRequestDto;
 import com.pfh.user.dto.auth.LoginResponseDto;
 import com.pfh.user.dto.auth.RegistrationRequestDto;
 import com.pfh.user.dto.auth.RegistrationResponseDto;
+import com.pfh.user.entity.UserEntity;
+import com.pfh.user.exception.CredentialInValidException;
 import com.pfh.user.exception.PasswordIsWeakException;
 import com.pfh.user.exception.PasswordMismatchException;
 import com.pfh.user.service.AuditLogService;
 import com.pfh.user.service.AuthService;
 import com.pfh.user.service.UserService;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
@@ -81,30 +84,37 @@ public class AuthServiceImpl implements AuthService {
     }    
 
 
-    // Dummy user for illustration
-    private final String dummyEmail = "user@example.com";
-    private final String dummyPasswordHash = new BCryptPasswordEncoder(12).encode("SecurePass123");
-
+    @Override
     public LoginResponseDto login(LoginRequestDto request, String ip, String userAgent) {
-        if (!dummyEmail.equals(request.getEmail())) {
+        UserEntity user;
+        
+        // Check if the email is registered
+        try {
+            user = userService.getUser(request.getEmail());
+        } catch (EntityNotFoundException ex) {
             auditLogService.logLoginFailure(request.getEmail(), ip, "user_not_found");
-            throw new RuntimeException("Invalid credentials");
+            throw new CredentialInValidException("Invalid credentials");
         }
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
-        if (!encoder.matches(request.getPassword(), dummyPasswordHash)) {
+        if (!encoder.matches(request.getPassword(), user.getPasswordHash())) {
             auditLogService.logLoginFailure(request.getEmail(), ip, "invalid_credentials");
-            throw new RuntimeException("Invalid credentials");
+            throw new CredentialInValidException("Invalid credentials");
         }
 
-        auditLogService.logLoginSuccess("1", request.getEmail(), ip, userAgent);
+        auditLogService.logLoginSuccess(
+            String.valueOf(user.getId()),
+            user.getEmail(),
+            ip,
+            userAgent
+        );
 
         return LoginResponseDto.builder()
-                .token("dummy-jwt-token")
+                .token("dummy-jwt-token") // Replace with actual JWT generation
                 .claims(Map.of(
-                        "userId", "1",
-                        "email", request.getEmail(),
-                        "roles", new String[]{"USER"},
+                        "userId", String.valueOf(user.getId()),
+                        "email", user.getEmail(),
+                        "roles", new String[]{user.getRole().toString()}, // assuming getRole() returns "USER", etc.
                         "exp", System.currentTimeMillis() / 1000 + 900
                 ))
                 .build();
