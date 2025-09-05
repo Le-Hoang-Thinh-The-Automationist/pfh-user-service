@@ -5,10 +5,10 @@
 * **So that** I can access protected financial resources securely
 
 ✅ **Acceptance Criteria:**
-- [ ] **AC.1:** `POST /api/auth/login` accepts valid email/password and returns JWT token
+- [X] **AC.1:** `POST /api/auth/login` accepts valid email/password and returns JWT token
 - [ ] **AC.2:** JWT token contains user ID, email, roles, and expiration (max 15 minutes for financial compliance)
 - [ ] **AC.3:** Password validation uses BCrypt with minimum 12 rounds
-- [ ] **AC.4:** Invalid credentials return `401 Unauthorized` with generic error message
+- [X] **AC.4:** Invalid credentials return `401 Unauthorized` with generic error message
 - [ ] **AC.5:** Unit and integration tests achieve ≥80% coverage
 
 ---

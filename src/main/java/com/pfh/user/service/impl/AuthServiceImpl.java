@@ -11,6 +11,7 @@ import com.pfh.user.exception.PasswordMismatchException;
 import com.pfh.user.service.AuditLogService;
 import com.pfh.user.service.AuthService;
 import com.pfh.user.service.UserService;
+import com.pfh.user.util.JwtUtil;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class AuthServiceImpl implements AuthService {
     private final Argon2PasswordEncoder encoder =
             new Argon2PasswordEncoder(16, 32, 2, 1 << 16, 3);
 
+    private JwtUtil jwtUtil;
 
     // Configuration macro
     private static final List<String> COMMON_PASSWORDS = Arrays.asList(
@@ -87,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponseDto login(LoginRequestDto request, String ip, String userAgent) {
         UserEntity user;
-        
+
         // Check if the email is registered
         try {
             user = userService.getUserByEmail(request.getEmail());
@@ -109,14 +111,17 @@ public class AuthServiceImpl implements AuthService {
             userAgent
         );
 
+        Map<String, Object> claims = Map.of(
+            "email", user.getEmail(),
+            "roles", new String[]{user.getRole().toString()}
+        );
+
         return LoginResponseDto.builder()
-                .token("dummy-jwt-token") // Replace with actual JWT generation
-                .claims(Map.of(
-                        "userId", String.valueOf(user.getId()),
-                        "email", user.getEmail(),
-                        "roles", new String[]{user.getRole().toString()}, // assuming getRole() returns "USER", etc.
-                        "exp", System.currentTimeMillis() / 1000 + 900
-                ))
-                .build();
+            .token(jwtUtil.generateToken(
+                String.valueOf(user.getId()),
+                claims
+            ))
+            .claims(claims)
+            .build();
     }
 }

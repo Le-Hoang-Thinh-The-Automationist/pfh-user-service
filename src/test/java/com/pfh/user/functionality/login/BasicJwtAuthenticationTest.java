@@ -36,6 +36,7 @@ import com.pfh.user.dto.auth.RegistrationRequestDto;
 import com.pfh.user.functionality.abstraction.AbstractIntegrationTest;
 import com.pfh.user.repository.UserRepository;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -73,10 +74,9 @@ class BasicJwtAuthenticationTest extends AbstractIntegrationTest {
     private LoginRequestDto validLogin;
 
     @BeforeEach
-    void setUp() {
-        // Assuming a test user is preloaded in DB:
+    void setUp() throws Exception {
         userRepository.deleteAll();
-        
+
         validRegistrationRequest = RegistrationRequestDto.builder()
                 .email("john.doe@example.com")
                 .password("SecurePassword123!")
@@ -88,59 +88,78 @@ class BasicJwtAuthenticationTest extends AbstractIntegrationTest {
                 .email("john.doe@example.com")
                 .password("SecurePassword123!")
                 .build();
+
+        String requestBody = objectMapper.writeValueAsString(validRegistrationRequest);
+        mockMvc.perform(post(REGISTRATION_ENDPOINT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+            .andExpect(status().isCreated());
+    }
+
+    @AfterEach
+    void tearDown() {
+        userRepository.deleteAll();
     }
 
     // --- AC.1 Tests ---
     @Test
     @DisplayName("[Basic JWT Authentication] AC.1 - VP.1: Login with valid credentials returns JWT")
     void ac1vp1_LoginWithValidCredentials_ShouldReturnJwtToken() throws Exception {
-        // Given - The newly registered account existed in the DB
-        String requestBody = objectMapper.writeValueAsString(validRegistrationRequest);
-        mockMvc.perform(post(REGISTRATION_ENDPOINT)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isCreated());
-        
-        // When
-        MvcResult result = mockMvc.perform(post(LOGIN_URL)
+        // Given - The newly registered account existed in the DB from setUp()
+
+        // When - Attempt to login with correct credentials
+        mockMvc.perform(post(LOGIN_URL)
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(validLogin)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.token").exists())
-            .andReturn();
+
+        // Then - Should return 200 OK with JWT token in response   
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").exists())
+                .andReturn();
     }
 
     @Test
     @DisplayName("[Basic JWT Authentication] AC.1 - IP.1: Login with wrong password returns 401")
     void ac1ip1_LoginWithWrongPassword_ShouldReturn401() throws Exception {
+        // Given - The newly registered account existed in the DB from setUp()
+
+        // When - Attempt to login with wrong password
         LoginRequestDto request = LoginRequestDto.builder()
-                .email("user@example.com")
+                .email("john.doe@example.com")
                 .password("WrongPass")
                 .build();
 
-        MvcResult result = mockMvc.perform(post(LOGIN_URL)
+        mockMvc.perform(post(LOGIN_URL)
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error").value("Invalid credentials"))
-            .andReturn();
-
+                
+        // Then - Should return 401 Unauthorized with generic error message                
+                .andExpect(status().isUnauthorized())                    
+                .andExpect(jsonPath("$.errors[?(@.field == 'credential')]").exists())
+                .andExpect(jsonPath("$.errors[?(@.field == 'credential')].message").value("Invalid credentials"))
+                .andReturn();
     }
 
     @Test
     @DisplayName("[Basic JWT Authentication] AC.1 - IP.2: Login with unknown email returns 401")
     void ac1ip2_LoginWithUnknownEmail_ShouldReturn401() throws Exception {
+        // Given - The newly registered account existed in the DB from setUp()
+
+        // When - Attempt to login with unknown email
         LoginRequestDto request = LoginRequestDto.builder()
                 .email("unknown@example.com")
-                .password("SomePass123")
+                .password("SecurePassword123!")
                 .build();
 
-        MvcResult result = mockMvc.perform(post(LOGIN_URL)
+        mockMvc.perform(post(LOGIN_URL)
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error").value("Invalid credentials"))
-            .andReturn();
+        
+        // Then - Should return 401 Unauthorized with generic error message                
+                .andExpect(status().isUnauthorized())                    
+                .andExpect(jsonPath("$.errors[?(@.field == 'credential')]").exists())
+                .andExpect(jsonPath("$.errors[?(@.field == 'credential')].message").value("Invalid credentials"))
+                .andReturn();
     }
 
     // --- AC.2 Tests ---
