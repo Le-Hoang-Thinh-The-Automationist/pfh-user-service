@@ -17,10 +17,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,11 +31,11 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final AuditLogService auditLogService;
 
-    // Dummy encoder using Argon2id with OWASP-aligned parameters
+    // Use Argon2 for password hashing with OWASP recommended parameters
     private final Argon2PasswordEncoder encoder =
             new Argon2PasswordEncoder(16, 32, 2, 1 << 16, 3);
 
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
     // Configuration macro
     private static final List<String> COMMON_PASSWORDS = Arrays.asList(
@@ -98,7 +98,7 @@ public class AuthServiceImpl implements AuthService {
             throw new CredentialInValidException("Invalid credentials");
         }
 
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+        // Check if the password matches
         if (!encoder.matches(request.getPassword(), user.getPasswordHash())) {
             auditLogService.logLoginFailure(request.getEmail(), ip, "invalid_credentials");
             throw new CredentialInValidException("Invalid credentials");
@@ -111,10 +111,10 @@ public class AuthServiceImpl implements AuthService {
             userAgent
         );
 
-        Map<String, Object> claims = Map.of(
-            "email", user.getEmail(),
-            "roles", new String[]{user.getRole().toString()}
-        );
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("email", user.getEmail());
+        claims.put("roles", new String[]{user.getRole().toString()});
+
 
         return LoginResponseDto.builder()
             .token(jwtUtil.generateToken(

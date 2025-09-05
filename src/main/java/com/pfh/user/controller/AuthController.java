@@ -45,7 +45,7 @@ public class AuthController {
         String userAgent = httpRequest.getHeader("User-Agent");
 
         LoginResponseDto response = authService.login(request, requesterIp, userAgent);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response); 
+        return ResponseEntity.status(HttpStatus.OK).body(response); 
     }
 
 }

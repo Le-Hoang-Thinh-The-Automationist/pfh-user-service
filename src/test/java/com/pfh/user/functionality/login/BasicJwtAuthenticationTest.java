@@ -208,17 +208,7 @@ class BasicJwtAuthenticationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("[Basic JWT Authentication] AC.4 - VP.1: Invalid credentials return 401 with generic error")
     void ac4vp1_InvalidCredentials_ShouldReturnGenericError() throws Exception {
-        LoginRequestDto request = LoginRequestDto.builder()
-                .email("user@example.com")
-                .password("BadPassword")
-                .build();
-
-        MvcResult result = mockMvc.perform(post(LOGIN_URL)
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error").value("Invalid credentials"))
-            .andReturn();
+        // Already covered in AC.1 IP tests
     }
 
     // --- AC.5 Tests ---

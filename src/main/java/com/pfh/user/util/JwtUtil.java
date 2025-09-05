@@ -3,37 +3,40 @@ package com.pfh.user.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Component;
 
 import com.pfh.user.exception.JsonFormatInvalidException;
-import com.pfh.user.service.UserService;
 
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor
 public class JwtUtil {
-    private final String SECRET = "your-secret-key"; // Replace with a secure secret key
+    private final String SECRET = "DummySecretKeyWhichIsAtLeast32CharactersLong"; // Replace with env variable in prod
     private final long EXPIRATION_TIME = 900_000; // 15 minutes
 
-    private final UserService userService;
 
-    public String generateToken(String subject, Map<String, Object> claims ) {
+    public String generateToken(String subject, Map<String, Object> claims) {
+        Key key = new SecretKeySpec(
+            SECRET.getBytes(StandardCharsets.UTF_8), 
+            SignatureAlgorithm.HS256.getJcaName()
+        );
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS256, SECRET)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
-
 
     public Long extractId(String token) {
         long id;
