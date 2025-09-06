@@ -13,9 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -119,5 +117,24 @@ public class GlobalExceptionHandler {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(errorResponse);
     }
+
+    /******************************* USER HANDLING   *******************************/
+    // Invalid Credential
+    @ExceptionHandler(CredentialInValidException.class)
+    public ResponseEntity<ErrorResponseDto> handleUser(CredentialInValidException ex) {
+        FieldErrorDto fieldError = new FieldErrorDto("credential", ex.getMessage());
+
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+            HttpStatus.UNAUTHORIZED.value(),          
+            ex.getMessage(),                      
+            Instant.now(),                        
+            Collections.singletonList(fieldError) 
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse);
+    }    
 
 }

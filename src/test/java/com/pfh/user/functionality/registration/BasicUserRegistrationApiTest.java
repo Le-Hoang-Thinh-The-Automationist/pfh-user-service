@@ -17,8 +17,8 @@
  */
 package com.pfh.user.functionality.registration;
 
-import com.pfh.user.dto.RegistrationRequestDto;
-import com.pfh.user.dto.RegistrationResponseDto;
+import com.pfh.user.dto.auth.RegistrationRequestDto;
+import com.pfh.user.dto.auth.RegistrationResponseDto;
 import com.pfh.user.entity.UserEntity;
 import com.pfh.user.functionality.abstraction.AbstractIntegrationTest;
 import com.pfh.user.repository.UserRepository;

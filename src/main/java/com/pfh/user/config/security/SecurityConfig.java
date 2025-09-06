@@ -1,4 +1,4 @@
-package com.pfh.user.config;
+package com.pfh.user.config.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
