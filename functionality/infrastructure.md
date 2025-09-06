@@ -17,20 +17,6 @@
 
 ---
 
-## **User Story: Security Endpoint Availability**
-
-* **As a** security auditor
-* **I want** the system to confirm accessibility of key security endpoints
-* **So that** I know authentication and authorization mechanisms are active
-
-✅ **Acceptance Criteria:**
-
-- [ ] **AC.1:** `/api/auth/login` endpoint responds with `200` on valid request.
-- [ ] **AC.2:** `/api/auth/logout` endpoint responds with `200` on valid request.
-- [ ] **AC.3:** Unauthorized requests to protected endpoints return `401 Unauthorized`.
-
----
-
 ## **User Story: Configuration Properties Status**
 
 * **As a** DevOps engineer
