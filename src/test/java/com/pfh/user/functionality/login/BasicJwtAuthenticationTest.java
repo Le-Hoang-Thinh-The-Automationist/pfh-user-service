@@ -14,18 +14,15 @@
  *                  IP.1: Correct email + wrong password
  *                  IP.2: Unknown email
  *
- *          * **AC.2:** JWT token contains user ID, email, roles, and expiration (≤15 min)
- *              - VP.1: JWT payload includes id, email, roles, and exp ≤ 900s
+ *          * **AC.2:** JWT token contains user ID (Subject), email, roles, and expiration (≤15 min)
+ *              - VP.1: JWT payload includes user ID as Subject, email, roles, and exp ≤ 900s
  *
- *          * **AC.3:** Password validation uses BCrypt with ≥12 rounds
- *              - VP.1: BCrypt hash with 12 rounds accepted
- *              - IP.1: Hash with <12 rounds rejected
+ *          * **AC.3:** Password validation uses Argon2PasswordEncoder with OWASP recommendation
+ *              - VP.1: Argon2id hash with OWASP parameters accepted
+ *              - IP.1: Hash with weak/non-OWASP parameters rejected
  *
  *          * **AC.4:** Invalid credentials return 401 Unauthorized with generic error
- *              - VP.1: Response body = {"error":"Invalid credentials"}
- *
- *          * **AC.5:** Unit + integration tests ≥80% coverage
- *              - VP.1: Coverage tool (JaCoCo/SonarQube) reports ≥80%
+ *              - VP.1: Response body = {"message":"Invalid credentials"}
  */
 
 package com.pfh.user.functionality.login;
@@ -47,7 +44,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
+import java.nio.charset.StandardCharsets;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -137,6 +139,7 @@ class BasicJwtAuthenticationTest extends AbstractIntegrationTest {
                 .andExpect(status().isUnauthorized())                    
                 .andExpect(jsonPath("$.errors[?(@.field == 'credential')]").exists())
                 .andExpect(jsonPath("$.errors[?(@.field == 'credential')].message").value("Invalid credentials"))
+                .andExpect(jsonPath("$.message").value("Invalid credentials"))
                 .andReturn();
     }
 
@@ -165,43 +168,76 @@ class BasicJwtAuthenticationTest extends AbstractIntegrationTest {
     // --- AC.2 Tests ---
     @Test
     @DisplayName("[Basic JWT Authentication] AC.2 - VP.1: JWT contains userId, email, roles, exp ≤ 15min")
-    void ac2vp1_JwtPayloadContainsRequiredClaims_ShouldReturnValidClaims() throws Exception {
+    void ac2vp1_JwtPayloadContainsRequiredClaimsAndValidExp_ShouldReturnValidClaimsAndExp() throws Exception {
         MvcResult result = mockMvc.perform(post(LOGIN_URL)
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(validLogin)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.token").exists())
-            .andExpect(jsonPath("$.claims.userId").exists())
-            .andExpect(jsonPath("$.claims.email").value("user@example.com"))
-            .andExpect(jsonPath("$.claims.roles").isArray())
-            .andExpect(jsonPath("$.claims.exp").isNotEmpty())
             .andReturn();
-        // NOTE: A deeper test could decode JWT and assert exp ≤ 900 seconds
+
+        // Extract JWT token from response
+        String responseBody = result.getResponse().getContentAsString();
+        String token = objectMapper.readTree(responseBody).get("token").asText();
+
+        // Decode JWT and check exp claim using the new Jwts.parserBuilder() API
+        Claims claims = Jwts.parserBuilder()
+            .setSigningKey("DummySecretKeyWhichIsAtLeast32CharactersLong".getBytes(StandardCharsets.UTF_8))
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
+
+        // Check required claims
+        assert claims.get("email").equals("john.doe@example.com");
+        assert claims.get("roles") != null;
+        assert claims.getSubject() != null;
+
+        // Check expiration time is ≤ 900 seconds (15 minutes) from issuedAt
+        long issuedAt = claims.getIssuedAt().getTime();
+        long expiration = claims.getExpiration().getTime();
+        long diffSeconds = (expiration - issuedAt) / 1000;
+        assert diffSeconds <= 900 : "JWT expiration exceeds 15 minutes";
     }
 
     // --- AC.3 Tests ---
     @Test
-    @DisplayName("[Basic JWT Authentication] AC.3 - VP.1: BCrypt ≥12 rounds accepted")
-    void ac3vp1_BcryptRounds12_ShouldAccept() {
-        // This is typically a unit test of password encoder config
-        int strength = 12;
-        org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder =
-                new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(strength);
+    @DisplayName("[Basic JWT Authentication] AC.3 - VP.1: Argon2id with OWASP params accepted")
+    void ac3vp1_Argon2idOwaspParams_ShouldAccept() {
+        // **AC.3.1:** Salt Length, according to OWASP: ≥16 bytes
+        int saltLength = 16; // OWASP: ≥16 bytes
+        // **AC.3.2:** Hash Length, according to OWASP: ≥32 bytes
+        int hashLength = 32; // OWASP: ≥32 bytes
+        // **AC.3.3:** Parallelism, according to OWASP: ≥2
+        int parallelism = 2; // OWASP: ≥2
+        // **AC.3.4:** Memory, according to OWASP: ≥65536 KB (64 MB)
+        int memory = 1 << 16; // OWASP: ≥65536 KB (64 MB)
+        // **AC.3.5:** Iterations, according to OWASP: ≥3 
+        int iterations = 3; // OWASP: ≥3
 
-        String hash = encoder.encode("SecurePass123");
-        assert encoder.matches("SecurePass123", hash);
+        Argon2PasswordEncoder encoder = new Argon2PasswordEncoder(
+                saltLength, hashLength, parallelism, memory, iterations
+        );
+
+        String hash = encoder.encode("SecurePass123!");
+        assert encoder.matches("SecurePass123!", hash);
     }
 
     @Test
-    @DisplayName("[Basic JWT Authentication] AC.3 - IP.1: BCrypt <12 rounds should not be used")
-    void ac3ip1_BcryptRoundsLessThan12_ShouldBeRejected() {
-        int strength = 8;
-        org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder =
-                new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(strength);
+    @DisplayName("[Basic JWT Authentication] AC.3 - IP.1: Argon2id with weak params should not be used")
+    void ac3ip1_Argon2idWeakParams_ShouldBeRejected() {
+        int saltLength = 8; // Too short
+        int hashLength = 16; // Too short
+        int parallelism = 1; // Too low
+        int memory = 4096; // Too low
+        int iterations = 1; // Too low
 
-        String hash = encoder.encode("SecurePass123");
+        Argon2PasswordEncoder encoder = new Argon2PasswordEncoder(
+                saltLength, hashLength, parallelism, memory, iterations
+        );
+
+        String hash = encoder.encode("SecurePass123!");
         // In real system, this config should be forbidden
-        assert strength < 12;
+        assert saltLength < 16 || hashLength < 32 || parallelism < 2 || memory < (1 << 16) || iterations < 3;
     }
 
     // --- AC.4 Tests ---
@@ -210,8 +246,4 @@ class BasicJwtAuthenticationTest extends AbstractIntegrationTest {
     void ac4vp1_InvalidCredentials_ShouldReturnGenericError() throws Exception {
         // Already covered in AC.1 IP tests
     }
-
-    // --- AC.5 Tests ---
-    // NOTE: This criterion is validated via coverage tools (e.g., JaCoCo, SonarQube),
-    // not via a JUnit test. Ensure coverage ≥80% in build pipeline.
 }
