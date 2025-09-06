@@ -1,10 +1,14 @@
 package com.pfh.user.util;
 
+import com.pfh.user.config.AppConstant;
+import com.pfh.user.config.security.AppSecrets;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.pfh.user.exception.JsonFormatInvalidException;
@@ -19,13 +23,13 @@ import java.util.function.Function;
 @Component
 @RequiredArgsConstructor
 public class JwtUtil {
-    private final String SECRET = "DummySecretKeyWhichIsAtLeast32CharactersLong"; // Replace with env variable in prod
-    private final long EXPIRATION_TIME = 900_000; // 15 minutes
 
+    @Autowired
+    private AppSecrets appSecrets;
 
     public String generateToken(String subject, Map<String, Object> claims) {
         Key key = new SecretKeySpec(
-            SECRET.getBytes(StandardCharsets.UTF_8), 
+            appSecrets.getJwtSecret().getBytes(StandardCharsets.UTF_8), 
             SignatureAlgorithm.HS256.getJcaName()
         );
 
@@ -33,7 +37,7 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setExpiration(new Date(System.currentTimeMillis() + AppConstant.JWT_EXPIRATION_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -59,7 +63,7 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody();
+        return Jwts.parser().setSigningKey(appSecrets.getJwtSecret()).parseClaimsJws(token).getBody();
     }
 
     public boolean isTokenExpired(String token) {

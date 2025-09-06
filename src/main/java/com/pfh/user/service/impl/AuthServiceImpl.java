@@ -1,5 +1,6 @@
 package com.pfh.user.service.impl;
 
+import com.pfh.user.config.AppConstant;
 import com.pfh.user.dto.auth.LoginRequestDto;
 import com.pfh.user.dto.auth.LoginResponseDto;
 import com.pfh.user.dto.auth.RegistrationRequestDto;
@@ -19,9 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -32,30 +31,23 @@ public class AuthServiceImpl implements AuthService {
     private final AuditLogService auditLogService;
 
     // Use Argon2 for password hashing with OWASP recommended parameters
-    private final Argon2PasswordEncoder encoder =
-            new Argon2PasswordEncoder(16, 32, 2, 1 << 16, 3);
-
-    private final JwtUtil jwtUtil;
-
-    // Configuration macro
-    private static final List<String> COMMON_PASSWORDS = Arrays.asList(
-        "password1234",        // 12 chars: predictable word + digits
-        "iloveyou2020!!",      // 14 chars: common phrase + popular year + symbols
-        "welcome12345!",       // 14 chars: greeting + digits + symbol
-        "qwertyuiop123",       // 13 chars: extended keyboard sequence + digits
-        "abc123abc123"        // 12 chars: repeated basic pattern
+    private final Argon2PasswordEncoder encoder = new Argon2PasswordEncoder(
+        AppConstant.ARGON2_SALT_LENGTH,
+        AppConstant.ARGON2_HASH_LENGTH,
+        AppConstant.ARGON2_PARALLELISM,
+        AppConstant.ARGON2_MEMORY,
+        AppConstant.ARGON2_ITERATIONS
     );
 
-    private static final int MINIMUM_PASSWORD_LENGTH=12;
-
+    private final JwtUtil jwtUtil;
     private static void checkPasswordStrength(String inputPassword){
         // Check if password is in common list
-        if (COMMON_PASSWORDS.contains(inputPassword.toLowerCase())) {
+        if (AppConstant.COMMON_PASSWORDS.contains(inputPassword.toLowerCase())) {
             throw new PasswordIsWeakException("Password is too common");
         }
 
         // Check length
-        if (inputPassword.length() <= MINIMUM_PASSWORD_LENGTH) {
+        if (inputPassword.length() <= AppConstant.MINIMUM_PASSWORD_LENGTH) {
             throw new PasswordIsWeakException("Password must be at least 12 characters long");
         }
 

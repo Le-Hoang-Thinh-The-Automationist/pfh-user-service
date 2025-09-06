@@ -1,25 +1,6 @@
+# Internal Application Configuration Section
 server:
   port: ${APP_PORT:8080}
-
-spring:
-  datasource:
-    url: jdbc:postgresql://${POSTGRE_SQL_DB_HOST:localhost}:${POSTGRE_SQL_DB_PORT:5432}/${POSTGRE_SQL_DB_NAME:mydatabase}
-    username: ${POSTGRE_SQL_DB_USERNAME:myuser}
-    password: ${POSTGRE_SQL_DB_PASSWORD:mypassword}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maxLifetime: 30000        # 30 seconds (default is 30 min, too long for Testcontainers)
-      idleTimeout: 10000        # 10 seconds    
-      connection-timeout: 2000   # fast fail for status checks
-      validation-timeout: 1000
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 management:
   server:
@@ -36,13 +17,35 @@ management:
     db:
       enabled: false
 
+security:
+  csrf:
+    enabled: ${CSRF_ENABLE:false}
 
-# Cutom configuration
+# External System Configuration Section
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    url: jdbc:postgresql://${POSTGRE_SQL_DB_HOST:localhost}:${POSTGRE_SQL_DB_PORT:5432}/${POSTGRE_SQL_DB_NAME:mydatabase}
+    username: ${POSTGRE_SQL_DB_USERNAME:myuser}
+    password: ${POSTGRE_SQL_DB_PASSWORD:mypassword}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maxLifetime: 30000
+      idleTimeout: 10000
+      connection-timeout: 2000
+      validation-timeout: 1000
+
 db:
   dbHostSource: ${POSTGRE_SQL_DB_HOST:localhost}
   dbPort: ${POSTGRE_SQL_DB_PORT:5432}
   dbName: ${POSTGRE_SQL_DB_NAME:mydatabase}
 
-security:
-  csrf:
-    enabled: ${CSRF_ENABLE:false}
+# Secrets Section
+app:
+  jwt-secret: DummySecretKeyWhichIsAtLeast32CharactersLong
