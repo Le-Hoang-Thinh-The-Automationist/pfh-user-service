@@ -6,7 +6,7 @@ import com.pfh.user.dto.auth.LoginResponseDto;
 import com.pfh.user.dto.auth.RegistrationRequestDto;
 import com.pfh.user.dto.auth.RegistrationResponseDto;
 import com.pfh.user.entity.UserEntity;
-import com.pfh.user.exception.CredentialInValidException;
+import com.pfh.user.exception.CredentialInvalidException;
 import com.pfh.user.exception.PasswordIsWeakException;
 import com.pfh.user.exception.PasswordMismatchException;
 import com.pfh.user.service.AuditLogService;
@@ -87,13 +87,13 @@ public class AuthServiceImpl implements AuthService {
             user = userService.getUserByEmail(request.getEmail());
         } catch (EntityNotFoundException ex) {
             auditLogService.logLoginFailure(request.getEmail(), ip, "user_not_found");
-            throw new CredentialInValidException("Invalid credentials");
+            throw new CredentialInvalidException("Invalid credentials");
         }
 
         // Check if the password matches
         if (!encoder.matches(request.getPassword(), user.getPasswordHash())) {
             auditLogService.logLoginFailure(request.getEmail(), ip, "invalid_credentials");
-            throw new CredentialInValidException("Invalid credentials");
+            throw new CredentialInvalidException("Invalid credentials");
         }
 
         auditLogService.logLoginSuccess(

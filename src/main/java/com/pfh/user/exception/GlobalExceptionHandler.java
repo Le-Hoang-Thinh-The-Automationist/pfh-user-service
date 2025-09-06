@@ -120,8 +120,8 @@ public class GlobalExceptionHandler {
 
     /******************************* USER HANDLING   *******************************/
     // Invalid Credential
-    @ExceptionHandler(CredentialInValidException.class)
-    public ResponseEntity<ErrorResponseDto> handleUser(CredentialInValidException ex) {
+    @ExceptionHandler(CredentialInvalidException.class)
+    public ResponseEntity<ErrorResponseDto> handleCredentialInvalid(CredentialInvalidException ex) {
         FieldErrorDto fieldError = new FieldErrorDto("credential", ex.getMessage());
 
         ErrorResponseDto errorResponse = new ErrorResponseDto(
