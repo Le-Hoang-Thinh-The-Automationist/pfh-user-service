@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Component;
 
-// import com.pfh.user.exception.JsonFormatInvalidException;
+import com.pfh.user.exception.JsonFormatInvalidException;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
