@@ -1,5 +1,7 @@
 package com.pfh.user.entity;
 
+import com.pfh.user.enums.UserRole;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,4 +23,15 @@ public class UserEntity {
 
     @Column(nullable = false)
     private String passwordHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
+
+    @PrePersist
+    private void ensureRoleDefault() {
+        if (role == null) {
+            role = UserRole.NORMAL_USER;
+        }
+    }
 }

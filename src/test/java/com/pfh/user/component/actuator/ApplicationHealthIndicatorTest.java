@@ -7,7 +7,6 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
-import java.net.URI;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 

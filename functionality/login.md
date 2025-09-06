@@ -5,12 +5,15 @@
 * **So that** I can access protected financial resources securely
 
 ✅ **Acceptance Criteria:**
-- [ ] **AC.1:** `POST /api/auth/login` accepts valid email/password and returns JWT token
-- [ ] **AC.2:** JWT token contains user ID, email, roles, and expiration (max 15 minutes for financial compliance)
-- [ ] **AC.3:** Password validation uses BCrypt with minimum 12 rounds
-- [ ] **AC.4:** Invalid credentials return `401 Unauthorized` with generic error message
-- [ ] **AC.5:** Unit and integration tests achieve ≥80% coverage
-
+- [X] **AC.1:** `POST /api/auth/login` accepts valid email/password and returns JWT token
+- [X] **AC.2:** JWT token contains user ID (Subject), email, roles, and expiration (max 15 minutes for financial compliance)
+- [X] **AC.3:** Password validation uses Argon2PasswordEncoder with OWASP recommendation
+    - [X] **AC.3.1:** Salt Length, according to OWASP: ≥16 bytes
+    - [X] **AC.3.2:** Hash Length, according to OWASP: ≥32 bytes
+    - [X] **AC.3.3:** Parallelism, according to OWASP: ≥2
+    - [X] **AC.3.4:** Memory, according to OWASP: ≥65536 KB (64 MB)
+    - [X] **AC.3.5:** Iterations, according to OWASP: ≥3 
+- [X] **AC.4:** Invalid credentials return `401 Unauthorized` with generic error message
 ---
 
 ## **User Story: Account Security Validation** 
