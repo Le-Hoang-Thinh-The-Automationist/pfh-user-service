@@ -41,6 +41,7 @@ import com.pfh.user.repository.UserRepository;
 import com.pfh.user.entity.UserEntity;
 import com.pfh.user.enums.UserStatus;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -118,6 +119,11 @@ class AccountSecurityValidationTest extends AbstractIntegrationTest {
             .build());
     }
 
+    @AfterAll
+    void tearDown() {
+        userRepository.deleteAll();
+    }
+
     // --- AC.1 Tests ---
 
     @Test
@@ -134,7 +140,7 @@ class AccountSecurityValidationTest extends AbstractIntegrationTest {
         
         // Then - Should succeed    
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.message").value("Welcome! Login successful."));
+            .andExpect(jsonPath("$.message").value("Login successful"));
     }
 
     @Test
@@ -176,11 +182,16 @@ class AccountSecurityValidationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("[Account Security Validation] AC.2 - IP.2: Suspended account returns 403 Forbidden with suspended message")
     void ac2ip2_SuspendedAccount_ShouldReturn403WithMessage() throws Exception {
+        // Given - Suspended user
+        
+        // When - Attempt to login
         var request = new LoginRequestDto("suspendedUser@example.com", TEST_PASSWORD);
 
         mockMvc.perform(post(LOGIN_URL)
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(request)))
+
+        // Then - Should be forbidden
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").value("Your account is suspended. Please contact support."));
     }
@@ -190,11 +201,16 @@ class AccountSecurityValidationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("[Account Security Validation] AC.3 - IP.1: Expired account returns 401 Unauthorized with renewal message")
     void ac3ip1_ExpiredAccount_ShouldReturn401WithMessage() throws Exception {
+        // Given - Expired user
+        
+        // When - Attempt to login
         var request = new LoginRequestDto("expiredUser@example.com", TEST_PASSWORD);
 
         mockMvc.perform(post(LOGIN_URL)
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(request)))
+
+        // Then - Should be unauthorized
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.message").value("Your account has expired. Please renew."));
     }

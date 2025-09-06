@@ -11,5 +11,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class LoginResponseDto {
     private String token;
+    private String message;
     private Map<String, Object> claims; // userId, email, roles, exp
 }

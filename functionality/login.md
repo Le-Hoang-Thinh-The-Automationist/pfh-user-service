@@ -22,9 +22,9 @@
 * **So that** only active, compliant accounts can access the system
 
 ✅ **Acceptance Criteria:**
-- [ ] **AC.1:** Locked accounts return `423 Locked` status
-- [ ] **AC.2:** Disabled/suspended accounts return `403 Forbidden`
-- [ ] **AC.3:** Expired accounts return `401 Unauthorized` with account renewal message
+- [X] **AC.1:** Locked accounts return `423 Locked` status
+- [X] **AC.2:** Disabled/suspended accounts return `403 Forbidden`
+- [X] **AC.3:** Expired accounts return `401 Unauthorized` with account renewal message
 - [ ] **AC.4:** Account status checks are logged for audit purposes
 
 ---

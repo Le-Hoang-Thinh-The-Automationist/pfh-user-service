@@ -137,4 +137,21 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }    
 
+    // User status exceptions
+    @ExceptionHandler(UserStatusException.class)
+    public ResponseEntity<ErrorResponseDto> handleUserStatus(UserStatusException ex) {
+        FieldErrorDto fieldError = new FieldErrorDto("userStatus", ex.getMessage());  
+        
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+            ex.getHttpStatus().value(),          
+            ex.getMessage(),                      
+            Instant.now(),                        
+            Collections.singletonList(fieldError) 
+        );
+
+        return ResponseEntity
+                .status(ex.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse);
+    }    
 }
