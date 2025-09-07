@@ -48,4 +48,4 @@ db:
 
 # Secrets Section
 app:
-  jwt-secret: DummySecretKeyWhichIsAtLeast32CharactersLong
+  jwt-secret: ${JWT_SECRET:DummySecretKeyWhichIsAtLeast32CharactersLong}
