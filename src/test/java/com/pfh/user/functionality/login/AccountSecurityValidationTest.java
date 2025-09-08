@@ -41,7 +41,7 @@ import com.pfh.user.repository.UserRepository;
 import com.pfh.user.entity.UserEntity;
 import com.pfh.user.enums.UserStatus;
 
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -119,7 +119,7 @@ class AccountSecurityValidationTest extends AbstractIntegrationTest {
             .build());
     }
 
-    @AfterAll
+    @AfterEach
     void tearDown() {
         userRepository.deleteAll();
     }
