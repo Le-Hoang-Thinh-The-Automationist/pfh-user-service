@@ -30,6 +30,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  # Database Configuration
   datasource:
     url: jdbc:postgresql://${POSTGRE_SQL_DB_HOST:localhost}:${POSTGRE_SQL_DB_PORT:5432}/${POSTGRE_SQL_DB_NAME:mydatabase}
     username: ${POSTGRE_SQL_DB_USERNAME:myuser}
@@ -41,11 +42,31 @@ spring:
       connection-timeout: 2000
       validation-timeout: 1000
 
+  # Redis Configuration
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: 0
+    timeout: 2000
+    ssl: false
+
+
 db:
   dbHostSource: ${POSTGRE_SQL_DB_HOST:localhost}
   dbPort: ${POSTGRE_SQL_DB_PORT:5432}
   dbName: ${POSTGRE_SQL_DB_NAME:mydatabase}
 
+cache:
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    timeout: 2000
+    database: 0
+    ssl: false
+
+
+
 # Secrets Section
 app:
-  jwt-secret: DummySecretKeyWhichIsAtLeast32CharactersLong
+  jwt-secret: ${JWT_SECRET:DummySecretKeyWhichIsAtLeast32CharactersLong}

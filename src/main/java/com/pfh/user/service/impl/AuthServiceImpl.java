@@ -6,9 +6,11 @@ import com.pfh.user.dto.auth.LoginResponseDto;
 import com.pfh.user.dto.auth.RegistrationRequestDto;
 import com.pfh.user.dto.auth.RegistrationResponseDto;
 import com.pfh.user.entity.UserEntity;
-import com.pfh.user.exception.CredentialInValidException;
+import com.pfh.user.exception.CredentialInvalidException;
 import com.pfh.user.exception.PasswordIsWeakException;
 import com.pfh.user.exception.PasswordMismatchException;
+import com.pfh.user.enums.UserStatus;
+import com.pfh.user.exception.UserStatusException;
 import com.pfh.user.service.AuditLogService;
 import com.pfh.user.service.AuthService;
 import com.pfh.user.service.UserService;
@@ -78,6 +80,16 @@ public class AuthServiceImpl implements AuthService {
     }    
 
 
+    private void checkUserStatus(UserEntity user) {
+        switch (user.getStatus()) {
+            case UserStatus.ACTIVE:
+                break;
+            // If account is not active, throw exception with appropriate message
+            default:
+                throw new UserStatusException(user.getStatus());
+        }
+    }
+
     @Override
     public LoginResponseDto login(LoginRequestDto request, String ip, String userAgent) {
         UserEntity user;
@@ -87,14 +99,17 @@ public class AuthServiceImpl implements AuthService {
             user = userService.getUserByEmail(request.getEmail());
         } catch (EntityNotFoundException ex) {
             auditLogService.logLoginFailure(request.getEmail(), ip, "user_not_found");
-            throw new CredentialInValidException("Invalid credentials");
+            throw new CredentialInvalidException("Invalid credentials");
         }
 
         // Check if the password matches
         if (!encoder.matches(request.getPassword(), user.getPasswordHash())) {
             auditLogService.logLoginFailure(request.getEmail(), ip, "invalid_credentials");
-            throw new CredentialInValidException("Invalid credentials");
+            throw new CredentialInvalidException("Invalid credentials");
         }
+
+        // Check user status
+        checkUserStatus(user);
 
         auditLogService.logLoginSuccess(
             String.valueOf(user.getId()),
@@ -113,6 +128,7 @@ public class AuthServiceImpl implements AuthService {
                 String.valueOf(user.getId()),
                 claims
             ))
+            .message("Login successful")
             .claims(claims)
             .build();
     }

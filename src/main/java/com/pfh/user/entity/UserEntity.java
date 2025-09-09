@@ -1,6 +1,7 @@
 package com.pfh.user.entity;
 
 import com.pfh.user.enums.UserRole;
+import com.pfh.user.enums.UserStatus;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,10 +29,18 @@ public class UserEntity {
     @Column(nullable = false)
     private UserRole role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserStatus status;
+
     @PrePersist
-    private void ensureRoleDefault() {
+    private void defaultData() {
         if (role == null) {
             role = UserRole.NORMAL_USER;
+        }
+
+        if (status == null) {
+            status = UserStatus.ACTIVE; // Active by default
         }
     }
 }
