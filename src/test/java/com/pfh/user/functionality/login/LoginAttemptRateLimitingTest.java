@@ -10,12 +10,18 @@
  *          * **AC.1:** Maximum 3 failed login attempts per user within 15 minutes
  *              - Valid Partitions (VP):
  *                  VP.1: Exactly 3 failed attempts in under 15 → returns 401 Unauthorized (locks on next attempt)
+ *                  VP.2: Perform like in VP1 first and then wait for 15 minutes since the first attempt. After that perform
+ *                        exactly 3 more failed attempts in under 15 → returns 401 Unauthorized (locks on next attempt)
  *              - Invalid Partitions (IP):
  *                  IP.1: 4th failed attempt within 15 minutes → returns 423 Locked
+ *                  IP.2: Perform like in VP1 first and then wait for 15 minutes since the first attempt. After that perform
+ *                        4 failed attempt within 15 minutes → returns 423 Locked at the 4th attempt
  *
  *          * **AC.2:** Account temporarily locked for 30 minutes after 3 failed attempts
  *              - Valid Partitions (VP):
  *                  VP.1: Any login attempt during lock period → returns 423 Locked
+ *              - Invalid Partitions (IP):
+ *                  IP.1: Attempt after 30 minutes lock period → returns 401 Unauthorized for invalid credential
  *
  *          * **AC.3:** IP-based rate limiting: 10 attempts per IP per minute
  *              - Valid Partitions (VP):
@@ -102,6 +108,15 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
         userRepository.deleteAll();
     }
 
+    void perform3AttemptsFailedLoginWithoutBeingLocked() throws Exception {
+        for (int i = 1; i <= 3; i++) {
+            mockMvc.perform(post(LOGIN_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidCredentials)))
+                .andExpect(status().isUnauthorized());
+        }
+    }
+
     // --- AC.1 Tests ---
 
     @Test
@@ -110,12 +125,31 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
         // Given - invalid credentials
 
         // When perform 3 failed attempts
+        // Then - expect 401 Unauthorized each time
+        perform3AttemptsFailedLoginWithoutBeingLocked();
+
+        // Verify account is not locked by attempting a valid login
+        mockMvc.perform(post(LOGIN_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(ValidCredentials)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("[Login Attempt Rate Limiting] AC.1 - VP.2: 3 failed attempts after 15 minutes window resets, returns 401 Unauthorized")
+    void ac1vp2_ThreeFailedAttemptsAfterWindowReset_ShouldReturn401() throws Exception {
+        // Given - invalid credentials and attempt 3 failed attempts within 15 minutes
+        ac1ip1_FourthFailedAttempt_ShouldReturn423();
+
+        // When - Wait for 15 minutes to reset the window and perform 3 more failed attempts
+        Thread.sleep(15 * 60 * 1000);
+
         for (int i = 1; i <= 3; i++) {
             mockMvc.perform(post(LOGIN_URL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidCredentials)))
 
-        // Then expect 401 Unauthorized each time
+        // Then - expect 401 Unauthorized each time and not locked
                 .andExpect(status().isUnauthorized());
         }
 
@@ -129,23 +163,36 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("[Login Attempt Rate Limiting] AC.1 - IP.1: 4th failed attempt returns 423 Locked")
     void ac1ip1_FourthFailedAttempt_ShouldReturn423() throws Exception {
-        // Given - invalid credentials
-
+        // Given - invalid credentials and perform 3 failed attempts within 15 minutes
+        perform3AttemptsFailedLoginWithoutBeingLocked();
+        
         // When - perform 4 failed attempts within 15 minutes
-        for (int i = 1; i <= 4; i++) {
-            mockMvc.perform(post(LOGIN_URL)
+        mockMvc.perform(post(LOGIN_URL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidCredentials)))
 
-        // Then - expect 401 Unauthorized each time
-                .andExpect(status().isUnauthorized());
-        }
-
-        // Verify account is locked on 4th attempt
-        mockMvc.perform(post(LOGIN_URL)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(ValidCredentials)))
+        // Then - expect 401 Unauthorized for first 3 and 423 Locked on 4th
             .andExpect(status().isLocked());
+
+    }
+
+    @Test
+    @DisplayName("[Login Attempt Rate Limiting] AC.1 - IP.2: 4th failed attempt after window reset returns 423 Locked")
+    void ac1ip2_FourthFailedAttemptAfterWindowReset_ShouldReturn423() throws Exception {
+        // Given - invalid credentials, perform 3 failed attempts within 15 minutes and wait for 15 minutes
+        perform3AttemptsFailedLoginWithoutBeingLocked();
+        Thread.sleep(15 * 60 * 1000); // wait for 15 minutes
+
+        // When - when 3 more failed attempts within new 15 minutes window and then 4th attempt
+        // Then - expect 401 Unauthorized for first 3 and 423 Locked on 4th
+        perform3AttemptsFailedLoginWithoutBeingLocked();
+
+        // 4th attempt
+        mockMvc.perform(post(LOGIN_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidCredentials)))
+            .andExpect(status().isLocked());
+
     }
 
     // --- AC.2 Tests ---
