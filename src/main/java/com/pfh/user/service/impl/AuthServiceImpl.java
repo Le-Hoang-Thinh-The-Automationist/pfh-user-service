@@ -85,20 +85,15 @@ public class AuthServiceImpl implements AuthService {
 
 
 // ============ LOGIN ============
-    private void checkUserStatus(UserEntity user) {
-        switch (user.getStatus()) {
-            case UserStatus.ACTIVE:
-                break;
-            // If account is not active, throw exception with appropriate message
-            default:
-                throw new UserStatusException(user.getStatus());
-        }
+
+    // Extracted method to handle failed login attempts and lock account if necessary
+    private boolean isThisFailedAttemptLockAccount(UserEntity user) {
+        return false; // Account is not locked yet
     }
 
-
-    // Login method
-    @Override
-    public LoginResponseDto login(LoginRequestDto request, String ip, String userAgent) {
+    // Extracted method to validate user credentials
+    private UserEntity checkAndGetUserIfExist(LoginRequestDto request, String ip) {
+        // 1. Check if the email is registered
         UserEntity user;
 
         // Check if the email is registered
@@ -108,15 +103,44 @@ public class AuthServiceImpl implements AuthService {
             auditLogService.logLoginFailure(request.getEmail(), ip, "user_not_found");
             throw new CredentialInvalidException("Invalid credentials");
         }
+        return user;
+    }
+
+    // Extracted method to validate user credentials
+    private void checkAndValidateUserCredentials(UserEntity user, LoginRequestDto request, String ip) {
+        // Check current user status (Active, Locked, Inactive, etc.)
+        switch (user.getStatus()) {
+            case UserStatus.ACTIVE:
+                break;
+            // If account is not active, throw exception with appropriate message
+            default:
+                throw new UserStatusException(user.getStatus());
+        }
 
         // Check if the password matches
         if (!encoder.matches(request.getPassword(), user.getPasswordHash())) {
             auditLogService.logLoginFailure(request.getEmail(), ip, "invalid_credentials");
-            throw new CredentialInvalidException("Invalid credentials");
-        }
 
-        // Check user status
-        checkUserStatus(user);
+            // If the account is not locked, proceed to log the failed attempt
+            if(!isThisFailedAttemptLockAccount(user)) {
+
+                throw new CredentialInvalidException("Invalid credentials");
+            }
+            // if the account is locked, we do not log further failed attempts to avoid cluttering the logs
+            // but pass the locked status to the checkUserStatus method later
+        }
+    }
+
+    // Login method
+    @Override
+    public LoginResponseDto login(LoginRequestDto request, String ip, String userAgent) {
+        UserEntity user;
+
+        // Check if the email is registered
+        user = checkAndGetUserIfExist(request, ip);
+
+        // Validate credentials and check status
+        checkAndValidateUserCredentials(user, request, ip);
 
         auditLogService.logLoginSuccess(
             String.valueOf(user.getId()),
