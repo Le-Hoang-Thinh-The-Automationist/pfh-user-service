@@ -42,6 +42,9 @@ public class AuthServiceImpl implements AuthService {
     );
 
     private final JwtUtil jwtUtil;
+
+// ============ REGISTER ============
+    // Check password strength
     private static void checkPasswordStrength(String inputPassword){
         // Check if password is in common list
         if (AppConstant.COMMON_PASSWORDS.contains(inputPassword.toLowerCase())) {
@@ -63,6 +66,7 @@ public class AuthServiceImpl implements AuthService {
         
     }
 
+    // Register method
     @Override
     public RegistrationResponseDto register(RegistrationRequestDto request) {
         // Check for password if it is strong enough
@@ -80,6 +84,7 @@ public class AuthServiceImpl implements AuthService {
     }    
 
 
+// ============ LOGIN ============
     private void checkUserStatus(UserEntity user) {
         switch (user.getStatus()) {
             case UserStatus.ACTIVE:
@@ -90,6 +95,8 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+
+    // Login method
     @Override
     public LoginResponseDto login(LoginRequestDto request, String ip, String userAgent) {
         UserEntity user;
