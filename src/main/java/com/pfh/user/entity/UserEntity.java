@@ -1,5 +1,7 @@
 package com.pfh.user.entity;
 
+import java.time.ZonedDateTime;
+
 import com.pfh.user.enums.UserRole;
 import com.pfh.user.enums.UserStatus;
 
@@ -32,6 +34,9 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserStatus status;
+
+    @Column(nullable = true)
+    private ZonedDateTime lockTime;
 
     @PrePersist
     private void defaultData() {

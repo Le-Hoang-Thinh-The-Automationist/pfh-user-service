@@ -24,4 +24,6 @@ public final class AppConstant {
         "abc123abc123"        // 12 chars: repeated basic pattern
     );
 
+    // Login attempt limits
+    public static final int MAX_FAILED_LOGIN_ATTEMPTS = 4;
 }

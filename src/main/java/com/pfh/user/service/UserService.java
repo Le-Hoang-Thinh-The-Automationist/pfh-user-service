@@ -8,4 +8,5 @@ public interface UserService {
     RegistrationResponseDto createUser(RegistrationRequestDto request);
     UserEntity getUserById(long id);
     UserEntity getUserByEmail(String email);
+    void updateUser(UserEntity user);
 }
