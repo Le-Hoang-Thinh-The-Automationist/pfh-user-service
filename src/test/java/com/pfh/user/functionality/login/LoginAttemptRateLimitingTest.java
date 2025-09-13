@@ -12,10 +12,12 @@
  *                  VP.1: Exactly 3 failed attempts in under 15 → returns 401 Unauthorized (locks on next attempt)
  *                  VP.2: Perform like in VP1 first and then wait for 15 minutes since the first attempt. After that perform
  *                        exactly 3 more failed attempts in under 15 → returns 401 Unauthorized (locks on next attempt)
+ *                  VP.3: Perform 3 failed attempts with three different time zone in under 15 minutes → returns 401 Unauthorized.
  *              - Invalid Partitions (IP):
  *                  IP.1: 4th failed attempt within 15 minutes → returns 423 Locked
  *                  IP.2: Perform like in VP1 first and then wait for 15 minutes since the first attempt. After that perform
  *                        4 failed attempt within 15 minutes → returns 423 Locked at the 4th attempt
+ *                  IP.3: 4 failed attempt at four different time zone in under 15 minutes → returns 423 Locked
  *
  *          * **AC.2:** Account temporarily locked for 30 minutes after 3 failed attempts
  *              - Valid Partitions (VP):
@@ -129,6 +131,19 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
         }
     }
 
+    void performThreeAttemptsFailedLoginAtDifferentTimezoneWithoutBeingLocked() throws Exception {
+        String[] timeZones = {"UTC", "America/New_York", "Asia/Tokyo"};
+
+        // Perform 3 failed attempts, each with a different time zone
+        for (String tz : timeZones) {
+            mockMvc.perform(post(LOGIN_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("X-Timezone", tz) // Simulate different time zones
+                    .content(objectMapper.writeValueAsString(invalidCredentials)))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
     void performFourAttemptsFailedLoginToLocked() throws Exception {
         performThreeAttemptsFailedLoginWithoutBeingLocked();
         
@@ -177,6 +192,23 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("[Login Attempt Rate Limiting] AC.1 - VP.3: 3 failed attempts from different time zones within 15 minutes returns 401 Unauthorized")
+    void ac1vp3_ThreeFailedAttemptsDifferentTimeZones_ShouldReturn401() throws Exception {
+        // Given - invalid credentials
+
+        // When - perform 3 failed attempts at three different time zones
+        // Then - expect 401 Unauthorized each time
+        performThreeAttemptsFailedLoginAtDifferentTimezoneWithoutBeingLocked();
+
+        // Verify account is not locked by attempting a valid login
+        mockMvc.perform(post(LOGIN_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("X-Timezone", "Europe/London")
+            .content(objectMapper.writeValueAsString(ValidCredentials)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
     @DisplayName("[Login Attempt Rate Limiting] AC.1 - IP.1: 4th failed attempt returns 423 Locked")
     void ac1ip1_FourthFailedAttempt_ShouldReturn423() throws Exception {
         // Given - invalid credentials and perform 3 failed attempts within 15 minutes
@@ -209,6 +241,23 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
                 .content(objectMapper.writeValueAsString(invalidCredentials)))
             .andExpect(status().isLocked());
 
+    }
+
+    @Test
+    @DisplayName("[Login Attempt Rate Limiting] AC.1 - IP.3: 4 failed attempts from different time zones within 15 minutes returns 423 Locked")
+    void ac1ip3_FourFailedAttemptsDifferentTimeZones_ShouldReturn423() throws Exception {
+        // Given - invalid credentials
+
+        // When - perform 3 failed attempts at three different time zones
+        // Then - expect 401 Unauthorized each time
+        performThreeAttemptsFailedLoginAtDifferentTimezoneWithoutBeingLocked();
+
+        // 4th attempt (different time zone) should lock the account
+        mockMvc.perform(post(LOGIN_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-Timezone", "Europe/London")
+                .content(objectMapper.writeValueAsString(invalidCredentials)))
+                .andExpect(status().isLocked());
     }
 
     // --- AC.2 Tests ---
