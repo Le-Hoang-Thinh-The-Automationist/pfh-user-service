@@ -9,7 +9,7 @@
  *
  *          * **AC.1:** Maximum 3 failed login attempts per user within 15 minutes
  *              - Valid Partitions (VP):
- *                  VP.1: Exactly 3 failed attempts in under 15 → returns 401 Unauthorized (locks on next attempt)
+ *                  VP.1: Exactly 3 failed attempts (wrong password only) in under 15 → returns 401 Unauthorized (locks on next attempt)
  *                  VP.2: Perform like in VP1 first and then wait for 15 minutes since the first attempt. After that perform
  *                        exactly 3 more failed attempts in under 15 → returns 401 Unauthorized (locks on next attempt)
  *                  VP.3: Perform 3 failed attempts with three different time zone in under 15 minutes → returns 401 Unauthorized.
