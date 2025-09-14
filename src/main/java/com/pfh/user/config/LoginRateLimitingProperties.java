@@ -16,4 +16,7 @@ public class LoginRateLimitingProperties {
 
     // Time window (in milliseconds) to track failed login attempts
     private long attemptWindowMs;
+
+    // Time window (in milliseconds) to track failed login attempts from the same IP address
+    private long ipAttemptWindowMs;
 }
