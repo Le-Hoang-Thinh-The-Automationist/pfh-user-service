@@ -1,7 +1,7 @@
 package com.pfh.user.service.impl;
 
 import com.pfh.user.config.AppConstant;
-import com.pfh.user.config.RateLimitingProperties;
+import com.pfh.user.config.LoginRateLimitingProperties;
 import com.pfh.user.dto.auth.LoginRequestDto;
 import com.pfh.user.dto.auth.LoginResponseDto;
 import com.pfh.user.dto.auth.RegistrationRequestDto;
@@ -55,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
     private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
-    private RateLimitingProperties rateLimitingProperties;
+    private LoginRateLimitingProperties loginRateLimitingProperties;
 
     // Helper class for storing attempt info
     public static class FailedAttemptInfo implements Serializable {
@@ -131,14 +131,14 @@ public class AuthServiceImpl implements AuthService {
             // First failed attempt: create new info
             attemptInfo = new FailedAttemptInfo(
                 // Set first attempt window timestamp from now
-                timeStampNow.plus(Duration.ofMillis(rateLimitingProperties.getAttemptWindowMs())), 1);
+                timeStampNow.plus(Duration.ofMillis(loginRateLimitingProperties.getAttemptWindowMs())), 1);
         } else {
             // Increase failed attempts
             attemptInfo.setAttempts(attemptInfo.getAttempts() + 1);
         }
 
         // Store/update in Redis with 15 min expiry
-        ops.set(key, attemptInfo, Duration.ofMillis(rateLimitingProperties.getAttemptWindowMs()));
+        ops.set(key, attemptInfo, Duration.ofMillis(loginRateLimitingProperties.getAttemptWindowMs()));
 
         // To lock the account, the failed attempts must exceed the limit AND within the time window 
         if (
@@ -149,7 +149,7 @@ public class AuthServiceImpl implements AuthService {
             // Set lock time to current time + lock duration
             user.setStatus(UserStatus.LOCKED);
             user.setLockTime(
-                timeStampNow.plus(Duration.ofMillis(rateLimitingProperties.getLockedDurationMs())) // lock duration
+                timeStampNow.plus(Duration.ofMillis(loginRateLimitingProperties.getLockedDurationMs())) // lock duration
             );
 
             // Update user's status in DB

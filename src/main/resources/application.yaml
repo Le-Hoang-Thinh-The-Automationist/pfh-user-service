@@ -21,9 +21,9 @@ security:
   csrf:
     enabled: ${CSRF_ENABLE:false}
 
-rate-limiting:
-  locked-duration-ms: ${AUTHEN_RATE_LIMITING_LOCKED_DURARION_IN_MS:1800000}    # defatul is 30 minutes
-  attempt-window-ms: ${AUTHEN_RATE_LIMITING_ATTEMPT_WINDOW_IN_MS:900000}      # defatul is 15 minutes
+login-rate-limiting:
+  locked-duration-ms: ${AUTHEN_LOGIN_RATE_LIMITING_LOCKED_DURARION_IN_MS:1800000}    # default is 30 minutes
+  attempt-window-ms: ${AUTHEN_LOGIN_RATE_LIMITING_ATTEMPT_WINDOW_IN_MS:900000}      # default is 15 minutes
 
 # External System Configuration Section
 spring:

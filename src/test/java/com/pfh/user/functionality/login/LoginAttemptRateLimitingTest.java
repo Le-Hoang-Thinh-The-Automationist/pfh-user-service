@@ -50,7 +50,7 @@ package com.pfh.user.functionality.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pfh.user.config.AppConstant;
-import com.pfh.user.config.RateLimitingProperties;
+import com.pfh.user.config.LoginRateLimitingProperties;
 import com.pfh.user.dto.auth.LoginRequestDto;
 import com.pfh.user.entity.UserEntity;
 import com.pfh.user.enums.UserStatus;
@@ -89,7 +89,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
-    private RateLimitingProperties RateLimitingProperties;
+    private LoginRateLimitingProperties LoginRateLimitingProperties;
 
     // Use Argon2 for password hashing with OWASP recommended parameters
     private final Argon2PasswordEncoder encoder = new Argon2PasswordEncoder(
@@ -122,8 +122,8 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
         ValidCredentials = new LoginRequestDto("user123@example.com", "correctPassword123!!!");
 
         // Set rate limiting properties for tests purposes
-        RateLimitingProperties.setLockedDurationMs(LOCKED_DURATION_MS);
-        RateLimitingProperties.setAttemptWindowMs(ATTEMPT_WINDOW_MS);
+        LoginRateLimitingProperties.setLockedDurationMs(LOCKED_DURATION_MS);
+        LoginRateLimitingProperties.setAttemptWindowMs(ATTEMPT_WINDOW_MS);
     }
 
     @AfterEach

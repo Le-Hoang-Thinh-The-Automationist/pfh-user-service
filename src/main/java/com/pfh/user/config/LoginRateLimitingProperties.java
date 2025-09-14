@@ -7,10 +7,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Component
-@ConfigurationProperties(prefix = "rate-limiting")
+@ConfigurationProperties(prefix = "login-rate-limiting")
 @Getter
 @Setter
-public class RateLimitingProperties {
+public class LoginRateLimitingProperties {
     // Duration (in milliseconds) for which a user account remains locked after exceeding failed login attempts
     private long lockedDurationMs;
 
