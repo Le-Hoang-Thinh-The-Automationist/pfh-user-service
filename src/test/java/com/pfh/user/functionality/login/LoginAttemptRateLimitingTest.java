@@ -21,10 +21,13 @@
  *
  *          * **AC.2:** Account temporarily locked for 30 minutes after 3 failed attempts
  *              - Valid Partitions (VP):
- *                  VP.1: Perform valid and invalid login attempt during lock period in under 30 minutes → returns 423 Locked
+ *                  VP.1: Perform valid and invalid login attempt (wrong password only) during lock period in under 30 minutes → returns 423 Locked
+ *                  VP.2: Do like VP.1 but at different time zones in under 30 minutes → returns 423 Locked
  *              - Invalid Partitions (IP):
- *                  IP.1: Invalid attempt after 30 minutes lock period → returns 401 Unauthorized for invalid credential
+ *                  IP.1: Perform 2 invalid attempts (wrong password), one at local time zone and other at another time zone
+ *                        after 30 minutes lock period → returns 401 Unauthorized for invalid credential
  *                  IP.2: Valid attempt after 30 minutes lock period → returns successful login for valid credential
+ *                  IP.3: Do like IP.2 but at different time zones in under 30 minutes → returns successful login for valid credential
  *
  *          * **AC.3:** IP-based rate limiting: 10 attempts per IP per minute
  *              - Valid Partitions (VP):
@@ -285,31 +288,89 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("[Login Attempt Rate Limiting] AC.2 - IP.1: Invalid attempt after 30 minutes lock period returns 401 Unauthorized")
+    @DisplayName("[Login Attempt Rate Limiting] AC.2 - VP.2: Attempt valid and invalid login during lock period at different time zones returns 423 Locked")
+    void ac2vp2_AttemptDuringLockPeriodDifferentTimeZones_ShouldReturn423() throws Exception {
+        // Given - lock the account
+        performFourAttemptsFailedLoginToLocked();
+        String[] timeZones = {"UTC", "America/New_York", "Asia/Tokyo"};
+
+        // When - attempt valid and invalid login during lock period at different time zones
+        // Then - expect 423 Locked for both attempts at each time zone
+        for (String tz : timeZones) {
+            // Invalid attempt
+            mockMvc.perform(post(LOGIN_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-Timezone", tz)
+                .content(objectMapper.writeValueAsString(invalidCredentials)))
+                .andExpect(status().isLocked());
+
+            // Valid attempt
+            mockMvc.perform(post(LOGIN_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-Timezone", tz)
+                .content(objectMapper.writeValueAsString(ValidCredentials)))
+                .andExpect(status().isLocked());
+        }
+    }
+
+    @Test
+    @DisplayName("[Login Attempt Rate Limiting] AC.2 - IP.1: Perform 2 invalid attempts, one at local time zone and other at another time zone, returns 401 Unauthorized")
     void ac2ip1_InvalidAttemptAfterLockPeriod_ShouldReturn401() throws Exception {
         // Given - invalid credentials and perform 4 failed attempts to lock the account, and wait for 30 minutes
         performFourAttemptsFailedLoginToLocked();
         Thread.sleep(LOCKED_DURATION_MS);
 
-        // Invalid attempt after lock period
+        // when - perform 2 invalid attempts, one at local time zone and other at another time zone
+        // Then - expect 401 Unauthorized for invalid credential at both attempts
+        
+        // Local time zone attempt
         mockMvc.perform(post(LOGIN_URL)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidCredentials)))
-            .andExpect(status().isUnauthorized());
+        .andExpect(status().isUnauthorized());
+
+        // Different time zone attempt
+        mockMvc.perform(post(LOGIN_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("X-Timezone", "America/New_York")
+            .content(objectMapper.writeValueAsString(invalidCredentials)))
+        .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @DisplayName("[Login Attempt Rate Limiting] AC.2 - IP.2: Valid attempt after 30 minutes lock period returns successful login")
+    @DisplayName("[Login Attempt Rate Limiting] AC.2 - IP.2: Valid attempt after 30 minutes lock period at local time zone returns successful login")
     void ac2ip2_ValidAttemptAfterLockPeriod_ShouldReturnOk() throws Exception {
         // Given - invalid credentials and perform 4 failed attempts to lock the account, and wait for 30 minutes
         performFourAttemptsFailedLoginToLocked();
         Thread.sleep(LOCKED_DURATION_MS);
 
-        // Valid attempt after lock period
+        // When - Valid attempt after lock period at local time zone
         mockMvc.perform(post(LOGIN_URL)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(ValidCredentials)))
+        
+        //  Then - expect successful login
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("[Login Attempt Rate Limiting] AC.2 - IP.3: Valid attempt after 30 minutes lock period at different time zones returns successful login")
+    void ac2ip3_ValidAttemptAfterLockPeriodDifferentTimeZones_ShouldReturnOk() throws Exception {
+        // Given - lock the account and wait for lock period
+        performFourAttemptsFailedLoginToLocked();
+        Thread.sleep(LOCKED_DURATION_MS);
+        String[] timeZones = {"UTC", "America/New_York", "Asia/Tokyo"};
+
+        // When - valid attempt after lock period at different time zones
+        for (String tz : timeZones) {
+            mockMvc.perform(post(LOGIN_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-Timezone", tz)
+                .content(objectMapper.writeValueAsString(ValidCredentials)))
+
+            // Then - expect successful login each time at each time zone
             .andExpect(status().isOk());
+        }
     }
 
     // --- AC.3 Tests ---
