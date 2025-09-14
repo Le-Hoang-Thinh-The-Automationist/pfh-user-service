@@ -178,6 +178,8 @@ public class AuthServiceImpl implements AuthService {
 
     // Extracted method to validate user credentials
     private void checkAndValidateUserCredentials(UserEntity user, LoginRequestDto request, String ip) {
+        // Current time in system's default zone
+        ZonedDateTime timeStampNow = ZonedDateTime.now(ZoneId.systemDefault());         
         // Check current user status (Active, Locked, Inactive, etc.)
         switch (user.getStatus()) {
             case UserStatus.ACTIVE:
@@ -189,7 +191,7 @@ public class AuthServiceImpl implements AuthService {
                     // Lock time is set 
                     user.getLockTime() != null &&
                     // Current time is after lock time
-                   ZonedDateTime.now(ZoneId.systemDefault()).isAfter(user.getLockTime())
+                    timeStampNow.isAfter(user.getLockTime())
                 ) {
                     
                     // Unlock the account
@@ -200,7 +202,7 @@ public class AuthServiceImpl implements AuthService {
                 } else {
                     throw new UserStatusException(UserStatus.LOCKED);
                 }
-                
+                break;
             // If account is not active, throw exception with appropriate message
             default:
                 throw new UserStatusException(user.getStatus());
