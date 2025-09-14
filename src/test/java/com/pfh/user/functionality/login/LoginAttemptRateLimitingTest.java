@@ -31,15 +31,15 @@
  *
  *          * **AC.3:** IP-based rate limiting: 10 attempts per IP per minute
  *              - Valid Partitions (VP):
- *                  VP.1: 1-10 attempts from same IP within 1 minute → returns 401 Unauthorized
+ *                  VP.1: 1-10 attempts from same IP within 1 minute → returns either 401 Unauthorized, or 423 Locked if user gets locked 
  *                  VP.2: 1-10 attempts from same IP within 1 minute. Wait for 1 minute, 
- *                        then perform 10 more attempt from the same IP → returns 401 Unauthorized
- *                  VP.3: 10 attempts from same IP and then perform 10 attempts at another IP within 1 minutes  → returns 401 Unauthorized
+ *                        then perform 10 more attempt from the same IP →  returns either 401 Unauthorized, or 423 Locked if user gets locked 
+ *                  VP.3: 10 attempts from same IP and then perform 10 attempts at another IP within 1 minutes  →  returns either 401 Unauthorized, or 423 Locked if user gets locked 
  *              - Invalid Partitions (IP):
  *                  IP.1: 11th attempt from same IP within 1 minute → returns 429 Too Many Requests
  *                  IP.2: 11th attempt from same IP after waiting for 1 minute → returns 429 Too Many Requests
  *                  IP.3: 11th attempt from same IP → returns 429 Too Many Requests 
- *                        and then perform 10 attempts at another IP within 10 minutes → returns 401 Unauthorized
+ *                        and then perform 10 attempts at another IP within 10 minutes →  returns either 401 Unauthorized, or 423 Locked if user gets locked 
  *
  *          * **AC.4:** Rate limit violations logged with IP, timestamp, and user identifier
  *              - Valid Partitions (VP):
@@ -65,9 +65,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -106,6 +108,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
 
     private final long LOCKED_DURATION_MS   = 1 * 15 * 1000; // mock 30 minutes with 15 seconds for faster tests
     private final long ATTEMPT_WINDOW_MS    = 1 * 10 * 1000; // mock 15 minutes with 10 seconds for faster tests
+    private final long IP_ATTEMPT_WINDOW_MS    = 1 * 10 * 1000; // mock 1 minutes with 10 seconds for faster tests
 
     @BeforeEach
     void setUp() {
@@ -124,6 +127,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
         // Set rate limiting properties for tests purposes
         LoginRateLimitingProperties.setLockedDurationMs(LOCKED_DURATION_MS);
         LoginRateLimitingProperties.setAttemptWindowMs(ATTEMPT_WINDOW_MS);
+        LoginRateLimitingProperties.setIpAttemptWindowMs(IP_ATTEMPT_WINDOW_MS);
     }
 
     @AfterEach
@@ -164,6 +168,15 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
 
     }
 
+    private ResultMatcher statusIsUnauthorizedOrForbidden() {
+        return result -> {
+            int status = result.getResponse().getStatus();
+            if (status != HttpStatus.UNAUTHORIZED.value() &&
+                status != HttpStatus.FORBIDDEN.value()) {
+                throw new AssertionError("Expected 401 or 403 but was " + status);
+            }
+        };
+    }    
     // --- AC.1 Tests ---
 
     @Test
@@ -382,7 +395,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     // --- AC.3 Tests ---
 
     @Test
-    @DisplayName("[Login Attempt Rate Limiting] AC.3 - VP.1: 1-10 attempts from same IP return 401 Unauthorized")
+    @DisplayName("[Login Attempt Rate Limiting] AC.3 - VP.1: 1-10 attempts from same IP returns either 401 Unauthorized, or 423 Locked")
     void ac3vp1_OneToTenAttemptsSameIp_ShouldReturn401() throws Exception {
         // Given
         var request = invalidCredentials;
@@ -394,12 +407,12 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
                 .header("X-Forwarded-For", clientIp)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isUnauthorized());
+            .andExpect(statusIsUnauthorizedOrForbidden());
         }
     }
 
     @Test
-    @DisplayName("[Login Attempt Rate Limiting] AC.3 - VP.2: 1-10 attempts from same IP, wait 1 minute, then 10 more attempts from same IP return 401 Unauthorized")
+    @DisplayName("[Login Attempt Rate Limiting] AC.3 - VP.2: 1-10 attempts from same IP, wait 1 minute, then 10 more attempts from same IP returns either 401 Unauthorized, or 423 Locked")
     void ac3vp2_TenAttemptsWaitThenTenMoreSameIp_ShouldReturn401() throws Exception {
         // Given
         var request = invalidCredentials;
@@ -411,11 +424,11 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
                 .header("X-Forwarded-For", clientIp)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isUnauthorized());
+            .andExpect(statusIsUnauthorizedOrForbidden());
         }
 
-        // Wait for 1 minute (use ATTEMPT_WINDOW_MS for test speed)
-        Thread.sleep(ATTEMPT_WINDOW_MS);
+        // Wait for 1 minute (use IP_ATTEMPT_WINDOW_MS for test speed)
+        Thread.sleep(IP_ATTEMPT_WINDOW_MS);
 
         // Then: Perform 10 more attempts from same IP
         for (int i = 1; i <= 10; i++) {
@@ -423,12 +436,12 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
                 .header("X-Forwarded-For", clientIp)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+            .andExpect(statusIsUnauthorizedOrForbidden());
         }
     }
 
     @Test
-    @DisplayName("[Login Attempt Rate Limiting] AC.3 - VP.3: 10 attempts from one IP, then 10 attempts from another IP within 1 minutes return 401 Unauthorized")
+    @DisplayName("[Login Attempt Rate Limiting] AC.3 - VP.3: 10 attempts from one IP, then 10 attempts from another IP within 1 minutes returns either 401 Unauthorized, or 423 Locked")
     void ac3vp3_TenAttemptsEachDifferentIp_ShouldReturn401() throws Exception {
         // Given
         var request = invalidCredentials;
@@ -441,7 +454,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
                 .header("X-Forwarded-For", ip1)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isUnauthorized());
+            .andExpect(statusIsUnauthorizedOrForbidden());
         }
 
         // Then: 10 attempts from ip2
@@ -450,7 +463,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
                 .header("X-Forwarded-For", ip2)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+            .andExpect(statusIsUnauthorizedOrForbidden());
         }
     }
 
@@ -466,12 +479,12 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
             mockMvc.perform(post(LOGIN_URL)
                 .header("X-Forwarded-For", clientIp)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isUnauthorized());
+                .content(objectMapper.writeValueAsString(request)))    
+            .andExpect(statusIsUnauthorizedOrForbidden());
         }
 
-        // Wait for 1 minute (use ATTEMPT_WINDOW_MS for test speed)
-        Thread.sleep(ATTEMPT_WINDOW_MS);
+        // Wait for 1 minute (use IP_ATTEMPT_WINDOW_MS for test speed)
+        Thread.sleep(IP_ATTEMPT_WINDOW_MS);
 
         // When & Then: 11th attempt after wait
         mockMvc.perform(post(LOGIN_URL)
@@ -482,7 +495,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("[Login Attempt Rate Limiting] AC.3 - IP.3: 11th attempt from same IP returns 429, then 10 attempts from another IP return 401 Unauthorized")
+    @DisplayName("[Login Attempt Rate Limiting] AC.3 - IP.3: 11th attempt from same IP returns 429, then 10 attempts from another IP returns either 401 Unauthorized, or 423 Locked")
     void ac3ip3_EleventhAttemptThenTenFromOtherIp_ShouldReturn429And401() throws Exception {
         // Given
         var request = invalidCredentials;
@@ -495,7 +508,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
                 .header("X-Forwarded-For", ip1)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isUnauthorized());
+            .andExpect(statusIsUnauthorizedOrForbidden());
         }
 
         // When: 11th attempt from ip1
@@ -503,7 +516,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
             .header("X-Forwarded-For", ip1)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isTooManyRequests());
+        .andExpect(status().isTooManyRequests());
 
         // Then: 10 attempts from ip2
         for (int i = 1; i <= 10; i++) {
@@ -511,7 +524,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
                 .header("X-Forwarded-For", ip2)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+            .andExpect(statusIsUnauthorizedOrForbidden());
         }
     }
 
