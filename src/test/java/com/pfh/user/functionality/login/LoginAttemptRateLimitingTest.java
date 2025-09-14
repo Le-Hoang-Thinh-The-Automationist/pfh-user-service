@@ -172,7 +172,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
         return result -> {
             int status = result.getResponse().getStatus();
             if (status != HttpStatus.UNAUTHORIZED.value() &&
-                status != HttpStatus.FORBIDDEN.value()) {
+                status != HttpStatus.LOCKED.value()) {
                 throw new AssertionError("Expected 401 or 403 but was " + status);
             }
         };

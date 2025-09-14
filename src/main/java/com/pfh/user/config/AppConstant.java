@@ -26,4 +26,5 @@ public final class AppConstant {
 
     // Login attempt limits
     public static final int MAX_FAILED_LOGIN_ATTEMPTS = 4;
+    public static final int MAX_FAILED_IP_LOGIN_ATTEMPTS = 10;
 }
