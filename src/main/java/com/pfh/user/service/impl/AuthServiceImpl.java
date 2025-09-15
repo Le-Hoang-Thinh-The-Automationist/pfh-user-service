@@ -16,6 +16,7 @@ import com.pfh.user.service.AuditLogService;
 import com.pfh.user.service.AuthService;
 import com.pfh.user.service.UserService;
 import com.pfh.user.util.JwtUtil;
+import com.pfh.user.util.RedisUtil;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,9 @@ public class AuthServiceImpl implements AuthService {
     );
 
     private final JwtUtil jwtUtil;
+
+    @Autowired  
+    private final RedisUtil redisUtil;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -119,32 +123,13 @@ public class AuthServiceImpl implements AuthService {
     private boolean isThisFailedAttemptLockAccount(UserEntity user) {
         // Current time in system's default zone
         ZonedDateTime timeStampNow = ZonedDateTime.now(ZoneId.systemDefault()); 
+        String userId = user.getId().toString();
 
-        // Redis key for storing failed attempts
-        String key = "login:fail:" + user.getId();
-        ValueOperations<String, Object> ops = redisTemplate.opsForValue();
-
-        // Get current attempt info from cache
-        FailedAttemptInfo attemptInfo = (FailedAttemptInfo) ops.get(key);
-
-        if (attemptInfo == null) {
-            // First failed attempt: create new info
-            attemptInfo = new FailedAttemptInfo(
-                // Set first attempt window timestamp from now
-                timeStampNow.plus(Duration.ofMillis(loginRateLimitingProperties.getAttemptWindowMs())), 1);
-        } else {
-            // Increase failed attempts
-            attemptInfo.setAttempts(attemptInfo.getAttempts() + 1);
-        }
-
-        // Store/update in Redis with 15 min expiry
-        ops.set(key, attemptInfo, Duration.ofMillis(loginRateLimitingProperties.getAttemptWindowMs()));
+        // Record the failed attempt
+        redisUtil.recordAuthenUserFailedAttempt(userId, Duration.ofMillis(loginRateLimitingProperties.getAttemptWindowMs()));
 
         // To lock the account, the failed attempts must exceed the limit AND within the time window 
-        if (
-            (timeStampNow.isBefore(attemptInfo.getFirstAttemptWindowTimestamp())) &&
-            (attemptInfo.getAttempts() >= AppConstant.MAX_FAILED_LOGIN_ATTEMPTS)
-        ) {
+        if (redisUtil.isAuthenUserRateLimited(userId, AppConstant.MAX_FAILED_LOGIN_ATTEMPTS)) {
 
             // Set lock time to current time + lock duration
             user.setStatus(UserStatus.LOCKED);
@@ -154,6 +139,9 @@ public class AuthServiceImpl implements AuthService {
 
             // Update user's status in DB
             userService.updateUser(user);
+            
+            // Reset attempts after locking
+            redisUtil.resetAuthenUserFailedAttempts(userId);
 
             return true; // Account is now locked
         }
@@ -170,6 +158,8 @@ public class AuthServiceImpl implements AuthService {
         try {
             user = userService.getUserByEmail(request.getEmail());
         } catch (EntityNotFoundException ex) {
+            // If not found, record failed attempt for IP in cache for rate limiting
+            redisUtil.recordIpFailedAttempt(ip);
             auditLogService.logLoginFailure(request.getEmail(), ip, "user_not_found");
             throw new CredentialInvalidException("Invalid credentials");
         }
@@ -210,6 +200,8 @@ public class AuthServiceImpl implements AuthService {
 
         // Check if the password matches
         if (!encoder.matches(request.getPassword(), user.getPasswordHash())) {
+            // If not found, record failed attempt for IP in cache for rate limiting
+            redisUtil.recordIpFailedAttempt(ip);
             auditLogService.logLoginFailure(request.getEmail(), ip, "invalid_credentials");
 
             // If the account is not locked, proceed to log the failed attempt
@@ -219,6 +211,9 @@ public class AuthServiceImpl implements AuthService {
                 auditLogService.logLoginFailure(request.getEmail(), ip, "account_locked_due_to_failed_attempts");
                 throw new UserStatusException(UserStatus.LOCKED);
             }
+        } else {
+            // If login is successful, reset failed attempts for user
+            redisUtil.resetAuthenUserFailedAttempts(user.getId().toString());
         }
     }
 
