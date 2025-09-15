@@ -36,7 +36,7 @@ public class RedisUtil {
                     0 : 
                     Integer.parseInt(countStr);
 
-        return count > maxAttempts;        
+        return count >= maxAttempts;        
     }
 
     public void recordAuthenUserFailedAttempt(String userId, Duration failWindowMs) {
@@ -68,7 +68,7 @@ public class RedisUtil {
                     0 : 
                     Integer.parseInt(countStr);
         
-        return count > AppConstant.MAX_FAILED_IP_LOGIN_ATTEMPTS;
+        return count >= AppConstant.MAX_FAILED_IP_LOGIN_ATTEMPTS;
     }
 
     public void recordIpFailedAttempt(String ip) {
