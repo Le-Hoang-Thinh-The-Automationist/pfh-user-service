@@ -71,6 +71,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -93,6 +94,9 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     @Autowired
     private LoginRateLimitingProperties LoginRateLimitingProperties;
 
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
     // Use Argon2 for password hashing with OWASP recommended parameters
     private final Argon2PasswordEncoder encoder = new Argon2PasswordEncoder(
         AppConstant.ARGON2_SALT_LENGTH,
@@ -113,6 +117,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
+        clearRedis();
 
         // Create a test user
         userRepository.save(UserEntity.builder()
@@ -133,6 +138,13 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     @AfterEach
     void tearDown() {
         userRepository.deleteAll();
+        clearRedis();
+    }
+
+    private void clearRedis() {
+        redisTemplate.getConnectionFactory()
+            .getConnection()
+            .serverCommands().flushAll();
     }
 
     void performThreeAttemptsFailedLoginWithoutBeingLocked() throws Exception {
