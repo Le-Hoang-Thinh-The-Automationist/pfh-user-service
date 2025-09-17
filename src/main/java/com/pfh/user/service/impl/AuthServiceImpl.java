@@ -23,13 +23,10 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.io.Serializable;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -56,25 +53,9 @@ public class AuthServiceImpl implements AuthService {
     private final RedisUtil redisUtil;
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-
-    @Autowired
     private LoginRateLimitingProperties loginRateLimitingProperties;
 
-    // Helper class for storing attempt info
-    public static class FailedAttemptInfo implements Serializable {
-        private ZonedDateTime firstAttemptWindowTimestamp;
-        private int attempts;
-
-        public FailedAttemptInfo(ZonedDateTime firstAttemptWindowTimestamp, int attempts) {
-            this.firstAttemptWindowTimestamp = firstAttemptWindowTimestamp;
-            this.attempts = attempts;
-        }
-
-        public ZonedDateTime getFirstAttemptWindowTimestamp() { return firstAttemptWindowTimestamp; }
-        public int getAttempts() { return attempts; }
-        public void setAttempts(int attempts) { this.attempts = attempts; }
-    }
+    private final Duration IP_ATTEMPT_WINDOW_DURATION = Duration.ofMillis(loginRateLimitingProperties.getIpAttemptWindowMs());
 
 // ============ REGISTER ============
     // Check password strength
@@ -151,7 +132,6 @@ public class AuthServiceImpl implements AuthService {
 
     // Extracted method to validate user credentials
     private UserEntity checkAndGetUserIfExist(LoginRequestDto request, String ip) {
-        // 1. Check if the email is registered
         UserEntity user;
 
         // Check if the email is registered
@@ -159,7 +139,7 @@ public class AuthServiceImpl implements AuthService {
             user = userService.getUserByEmail(request.getEmail());
         } catch (EntityNotFoundException ex) {
             // If not found, record failed attempt for IP in cache for rate limiting
-            redisUtil.recordIpFailedAttempt(ip);
+            redisUtil.recordIpFailedAttempt(ip, IP_ATTEMPT_WINDOW_DURATION);
             auditLogService.logLoginFailure(request.getEmail(), ip, "user_not_found");
             throw new CredentialInvalidException("Invalid credentials");
         }
@@ -190,20 +170,20 @@ public class AuthServiceImpl implements AuthService {
 
                     userService.updateUser(user);
                 } else {
-                    redisUtil.recordIpFailedAttempt(ip);
+                    redisUtil.recordIpFailedAttempt(ip, IP_ATTEMPT_WINDOW_DURATION);
                     throw new UserStatusException(UserStatus.LOCKED);
                 }
                 break;
             // If account is not active, throw exception with appropriate message
             default:
-                redisUtil.recordIpFailedAttempt(ip);
+                redisUtil.recordIpFailedAttempt(ip, IP_ATTEMPT_WINDOW_DURATION);
                 throw new UserStatusException(user.getStatus());
         }
 
         // Check if the password matches
         if (!encoder.matches(request.getPassword(), user.getPasswordHash())) {
             // If not found, record failed attempt for IP in cache for rate limiting
-            redisUtil.recordIpFailedAttempt(ip);
+            redisUtil.recordIpFailedAttempt(ip, IP_ATTEMPT_WINDOW_DURATION);
             auditLogService.logLoginFailure(request.getEmail(), ip, "invalid_credentials");
 
             // If the account is not locked, proceed to log the failed attempt

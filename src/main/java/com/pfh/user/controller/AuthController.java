@@ -1,5 +1,6 @@
 package com.pfh.user.controller;
 
+import com.pfh.user.config.AppConstant;
 import com.pfh.user.dto.auth.LoginRequestDto;
 import com.pfh.user.dto.auth.LoginResponseDto;
 import com.pfh.user.dto.auth.RegistrationRequestDto;
@@ -51,7 +52,7 @@ public class AuthController {
         String userAgent = httpRequest.getHeader("User-Agent");
 
         // Rate limit check
-        if (redisUtil.isIpRateLimited(requesterIp)) {
+        if (redisUtil.isIpRateLimited(requesterIp, AppConstant.MAX_FAILED_IP_LOGIN_ATTEMPTS)) {
             throw new RateLimitExceededException("Too many failed login attempts from this IP. Please try slow down.");
         }
 

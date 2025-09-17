@@ -10,13 +10,13 @@
  *          * **AC.1:** Maximum 3 failed login attempts per user within 15 minutes
  *              - Valid Partitions (VP):
  *                  VP.1: Exactly 3 failed attempts (wrong password only) in under 15 → returns 401 Unauthorized (locks on next attempt)
- *                  VP.2: Perform like in VP1 first and then wait for 15 minutes since the first attempt. After that perform
- *                        exactly 3 more failed attempts in under 15 → returns 401 Unauthorized (locks on next attempt)
+ *                  VP.2: - 1) Perform like in VP1 first and then wait for 15 minutes since the first attempt. 
+ *                        - 2) After that perform exactly 3 more failed attempts in under 15 → returns 401 Unauthorized (locks on next attempt)
  *                  VP.3: Perform 3 failed attempts with three different time zone in under 15 minutes → returns 401 Unauthorized.
  *              - Invalid Partitions (IP):
  *                  IP.1: 4th failed attempt within 15 minutes → returns 423 Locked
- *                  IP.2: Perform like in VP1 first and then wait for 15 minutes since the first attempt. After that perform
- *                        4 failed attempt within 15 minutes → returns 423 Locked at the 4th attempt
+ *                  IP.2: - 1) Perform like in VP1 first and then wait for 15 minutes since the first attempt. After that perform
+ *                        - 2) 4 failed attempt within 15 minutes → returns 423 Locked at the 4th attempt
  *                  IP.3: 4 failed attempt at four different time zone in under 15 minutes → returns 423 Locked
  *
  *          * **AC.2:** Account temporarily locked for 30 minutes after 3 failed attempts
@@ -24,16 +24,16 @@
  *                  VP.1: Perform valid and invalid login attempt (wrong password only) during lock period in under 30 minutes → returns 423 Locked
  *                  VP.2: Do like VP.1 but at different time zones in under 30 minutes → returns 423 Locked
  *              - Invalid Partitions (IP):
- *                  IP.1: Perform 2 invalid attempts (wrong password), one at local time zone and other at another time zone
- *                        after 30 minutes lock period → returns 401 Unauthorized for invalid credential
+ *                  IP.1: - 1) Perform 2 invalid attempts (wrong password), one at local time zone and other at another time zone
+ *                        - 2) After 30 minutes lock period → returns 401 Unauthorized for invalid credential
  *                  IP.2: Valid attempt after 30 minutes lock period → returns successful login for valid credential
  *                  IP.3: Do like IP.2 but at different time zones in under 30 minutes → returns successful login for valid credential
  *
  *          * **AC.3:** IP-based rate limiting: 10 attempts per IP per minute
  *              - Valid Partitions (VP):
  *                  VP.1: 1-10 attempts from same IP within 1 minute → returns either 401 Unauthorized, or 423 Locked if user gets locked 
- *                  VP.2: 1-10 attempts from same IP within 1 minute. Wait for 1 minute, 
- *                        then perform 10 more attempt from the same IP →  returns either 401 Unauthorized, or 423 Locked if user gets locked 
+ *                  VP.2: - 1) 1-10 attempts from same IP within 1 minute. Wait for 1 minute, 
+ *                        - 2) Then perform 10 more attempt from the same IP →  returns either 401 Unauthorized, or 423 Locked if user gets locked 
  *                  VP.3: 10 attempts from same IP and then perform 10 attempts at another IP within 1 minutes  →  returns either 401 Unauthorized, or 423 Locked if user gets locked 
  *              - Invalid Partitions (IP):
  *                  IP.1: - 1) From the 11th attempt of either valid or invalid from same IP within 1 minute → returns 429 Too Many Requests

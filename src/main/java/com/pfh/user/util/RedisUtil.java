@@ -58,7 +58,7 @@ public class RedisUtil {
     }
 
     // =========== IP RATE LIMITING METHODS ============
-    public boolean isIpRateLimited(String ip) {
+    public boolean isIpRateLimited(String ip, int maxAttempts) {
         String key = PREFIX_IP + ip;
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
         String countStr = ops.get(key);
@@ -68,22 +68,19 @@ public class RedisUtil {
                     0 : 
                     Integer.parseInt(countStr);
         
-        return count >= AppConstant.MAX_FAILED_IP_LOGIN_ATTEMPTS;
+        return count >= maxAttempts;
     }
 
-    public void recordIpFailedAttempt(String ip) {
+    public void recordIpFailedAttempt(String ip, Duration ipFailedWindowMs) {
         String key = PREFIX_IP + ip;
-
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
-
-        Long expireMs = loginRateLimitingProperties.getIpAttemptWindowMs();
 
         // Use Redis atomic increment
         Long count = ops.increment(key);
 
         // Set expiry only if key is new
         if (count != null && count == 1L) {
-            redisTemplate.expire(key, Duration.ofMillis(expireMs));
+            redisTemplate.expire(key, ipFailedWindowMs);
         }
     }
 
