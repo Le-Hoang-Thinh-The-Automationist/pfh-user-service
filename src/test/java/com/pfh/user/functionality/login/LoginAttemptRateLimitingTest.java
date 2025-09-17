@@ -36,10 +36,10 @@
  *                        then perform 10 more attempt from the same IP →  returns either 401 Unauthorized, or 423 Locked if user gets locked 
  *                  VP.3: 10 attempts from same IP and then perform 10 attempts at another IP within 1 minutes  →  returns either 401 Unauthorized, or 423 Locked if user gets locked 
  *              - Invalid Partitions (IP):
- *                  IP.1: 11th attempt from same IP within 1 minute → returns 429 Too Many Requests
- *                  IP.2: 11th attempt from same IP after waiting for 1 minute → returns 429 Too Many Requests
- *                  IP.3: 11th attempt from same IP → returns 429 Too Many Requests 
- *                        and then perform 10 attempts at another IP within 10 minutes →  returns either 401 Unauthorized, or 423 Locked if user gets locked 
+ *                  IP.1: - 1) From the 11th attempt of either valid or invalid from same IP within 1 minute → returns 429 Too Many Requests
+ *                        - 2) After that wait for 1 minute and then perform another attempt → returns either 401 Unauthorized, or 423 Locked if user gets locked
+ *                  IP.2: - 1) 11th attempt from same IP → returns 429 Too Many Requests 
+ *                        - 2) and then perform 10 attempts at another IP within 1 minutes →  returns either 401 Unauthorized, or 423 Locked if user gets locked 
  *
  *          * **AC.4:** Rate limit violations logged with IP, timestamp, and user identifier
  *              - Valid Partitions (VP):
@@ -480,13 +480,13 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("[Login Attempt Rate Limiting] AC.3 - IP.2: 11th attempt from same IP after waiting 1 minute returns 429 Too Many Requests")
-    void ac3ip2_EleventhAttemptAfterWaitSameIp_ShouldReturn429() throws Exception {
+    @DisplayName("[Login Attempt Rate Limiting] AC.3 - IP.1: 11th attempt from same IP returns 429 Too Many Requests and after 1 minutes returns either 401 Unauthorized, or 423 Locked")
+    void ac3ip1_EleventhAttemptAfterWaitSameIp_ShouldReturn429() throws Exception {
         // Given
         var request = invalidCredentials;
         String clientIp = "203.0.113.9";
 
-        // 10 attempts
+        // When: Perform 10 attempts from same IP 
         for (int i = 1; i <= 10; i++) {
             mockMvc.perform(post(LOGIN_URL)
                 .header("X-Forwarded-For", clientIp)
@@ -495,20 +495,35 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
             .andExpect(statusIsUnauthorizedOrForbidden());
         }
 
+        // Then: From 11th attempt of valid or invalid from same IP returns 429
+        // (performing valid attempts here)
+        mockMvc.perform(post(LOGIN_URL)
+            .header("X-Forwarded-For", clientIp)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(ValidCredentials)))
+            .andExpect(status().isTooManyRequests());
+
+        // (performing invalid attempts here)
+        mockMvc.perform(post(LOGIN_URL)
+            .header("X-Forwarded-For", clientIp)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(invalidCredentials)))
+            .andExpect(status().isTooManyRequests());
+
         // Wait for 1 minute (use IP_ATTEMPT_WINDOW_MS for test speed)
         Thread.sleep(IP_ATTEMPT_WINDOW_MS);
 
-        // When & Then: 11th attempt after wait
+        // Then: Next attempt from same IP returns either 401 Unauthorized, or 423 Locked
         mockMvc.perform(post(LOGIN_URL)
             .header("X-Forwarded-For", clientIp)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isTooManyRequests());
+            .andExpect(statusIsUnauthorizedOrForbidden());
     }
 
     @Test
-    @DisplayName("[Login Attempt Rate Limiting] AC.3 - IP.3: 11th attempt from same IP returns 429, then 10 attempts from another IP returns either 401 Unauthorized, or 423 Locked")
-    void ac3ip3_EleventhAttemptThenTenFromOtherIp_ShouldReturn429And401() throws Exception {
+    @DisplayName("[Login Attempt Rate Limiting] AC.3 - IP.2: 11th attempt from same IP returns 429, then 10 attempts from another IP returns either 401 Unauthorized, or 423 Locked")
+    void ac3ip2_EleventhAttemptThenTenFromOtherIp_ShouldReturn429And401() throws Exception {
         // Given
         var request = invalidCredentials;
         String ip1 = "203.0.113.10";

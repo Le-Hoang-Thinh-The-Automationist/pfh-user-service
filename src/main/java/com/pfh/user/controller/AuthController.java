@@ -4,6 +4,7 @@ import com.pfh.user.dto.auth.LoginRequestDto;
 import com.pfh.user.dto.auth.LoginResponseDto;
 import com.pfh.user.dto.auth.RegistrationRequestDto;
 import com.pfh.user.dto.auth.RegistrationResponseDto;
+import com.pfh.user.exception.RateLimitExceededException;
 import com.pfh.user.service.AuthService;
 import com.pfh.user.util.RedisUtil;
 
@@ -51,7 +52,7 @@ public class AuthController {
 
         // Rate limit check
         if (redisUtil.isIpRateLimited(requesterIp)) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+            throw new RateLimitExceededException("Too many failed login attempts from this IP. Please try slow down.");
         }
 
         LoginResponseDto response = authService.login(request, requesterIp, userAgent);

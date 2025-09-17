@@ -190,11 +190,13 @@ public class AuthServiceImpl implements AuthService {
 
                     userService.updateUser(user);
                 } else {
+                    redisUtil.recordIpFailedAttempt(ip);
                     throw new UserStatusException(UserStatus.LOCKED);
                 }
                 break;
             // If account is not active, throw exception with appropriate message
             default:
+                redisUtil.recordIpFailedAttempt(ip);
                 throw new UserStatusException(user.getStatus());
         }
 
