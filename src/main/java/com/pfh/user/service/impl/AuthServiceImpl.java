@@ -18,6 +18,7 @@ import com.pfh.user.service.UserService;
 import com.pfh.user.util.JwtUtil;
 import com.pfh.user.util.RedisUtil;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -55,7 +56,15 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private LoginRateLimitingProperties loginRateLimitingProperties;
 
-    private final Duration IP_ATTEMPT_WINDOW_DURATION = Duration.ofMillis(loginRateLimitingProperties.getIpAttemptWindowMs());
+    private Duration IP_ATTEMPT_WINDOW_DURATION;
+
+    // Due to how Spring handles @Autowired after constructor injection,
+    // we need to initialize this after the bean is constructed not in the constructor.
+    @PostConstruct
+    public void init() {
+        this.IP_ATTEMPT_WINDOW_DURATION =
+                Duration.ofMillis(loginRateLimitingProperties.getIpAttemptWindowMs());
+    }
 
 // ============ REGISTER ============
     // Check password strength
