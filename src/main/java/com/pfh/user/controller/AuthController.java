@@ -52,7 +52,11 @@ public class AuthController {
         String userAgent = httpRequest.getHeader("User-Agent");
 
         // Rate limit check
-        if (redisUtil.isIpRateLimited(requesterIp, AppConstant.MAX_FAILED_IP_LOGIN_ATTEMPTS)) {
+        if (redisUtil.isRateLimited(
+                AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, 
+                requesterIp, 
+                AppConstant.MAX_FAILED_IP_LOGIN_ATTEMPTS
+        )) {
             throw new RateLimitExceededException("Too many failed login attempts from this IP. Please try slow down.");
         }
 
@@ -60,7 +64,7 @@ public class AuthController {
 
         // If login failed, record attempt
         if (response.getMessage().equals("Login successful")) {
-            redisUtil.resetIpAttempts(requesterIp);
+            redisUtil.resetAttempts(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, requesterIp);
         } 
 
         return ResponseEntity.status(HttpStatus.OK).body(response);

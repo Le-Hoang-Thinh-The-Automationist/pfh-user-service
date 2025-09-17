@@ -105,10 +105,10 @@ public class AuthServiceImpl implements AuthService {
         String userId = user.getId().toString();
 
         // Record the failed attempt
-        redisUtil.recordAuthenUserFailedAttempt(userId, Duration.ofMillis(loginRateLimitingProperties.getAttemptWindowMs()));
+        redisUtil.recordFailedAttempt(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_USER, userId, Duration.ofMillis(loginRateLimitingProperties.getAttemptWindowMs()));
 
         // To lock the account, the failed attempts must exceed the limit AND within the time window 
-        if (redisUtil.isAuthenUserRateLimited(userId, AppConstant.MAX_FAILED_LOGIN_ATTEMPTS)) {
+        if (redisUtil.isRateLimited(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_USER, userId, AppConstant.MAX_FAILED_LOGIN_ATTEMPTS)) {
 
             // Set lock time to current time + lock duration
             user.setStatus(UserStatus.LOCKED);
@@ -120,7 +120,7 @@ public class AuthServiceImpl implements AuthService {
             userService.updateUser(user);
             
             // Reset attempts after locking
-            redisUtil.resetAuthenUserFailedAttempts(userId);
+            redisUtil.resetAttempts(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_USER, userId);
 
             return true; // Account is now locked
         }
@@ -138,7 +138,7 @@ public class AuthServiceImpl implements AuthService {
             user = userService.getUserByEmail(request.getEmail());
         } catch (EntityNotFoundException ex) {
             // If not found, record failed attempt for IP in cache for rate limiting
-            redisUtil.recordFailedAttempt(ip, ipFailedWindowMs);
+            redisUtil.recordFailedAttempt(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, ip, ipFailedWindowMs);
             auditLogService.logLoginFailure(request.getEmail(), ip, "user_not_found");
             throw new CredentialInvalidException("Invalid credentials");
         }
@@ -171,20 +171,20 @@ public class AuthServiceImpl implements AuthService {
 
                     userService.updateUser(user);
                 } else {
-                    redisUtil.recordFailedAttempt(ip, ipFailedWindowMs);
+                    redisUtil.recordFailedAttempt(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, ip, ipFailedWindowMs);
                     throw new UserStatusException(UserStatus.LOCKED);
                 }
                 break;
             // If account is not active, throw exception with appropriate message
             default:
-                redisUtil.recordFailedAttempt(ip, ipFailedWindowMs);
+                redisUtil.recordFailedAttempt(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, ip, ipFailedWindowMs);
                 throw new UserStatusException(user.getStatus());
         }
 
         // Check if the password matches
         if (!encoder.matches(request.getPassword(), user.getPasswordHash())) {
             // If not found, record failed attempt for IP in cache for rate limiting
-            redisUtil.recordFailedAttempt(ip, ipFailedWindowMs);
+            redisUtil.recordFailedAttempt(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, ip, ipFailedWindowMs);
             auditLogService.logLoginFailure(request.getEmail(), ip, "invalid_credentials");
 
             // If the account is not locked, proceed to log the failed attempt
@@ -196,7 +196,7 @@ public class AuthServiceImpl implements AuthService {
             }
         } else {
             // If login is successful, reset failed attempts for user
-            redisUtil.resetAuthenUserFailedAttempts(user.getId().toString());
+            redisUtil.resetAttempts(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, user.getId().toString());
         }
     }
 
