@@ -18,7 +18,6 @@ import com.pfh.user.service.UserService;
 import com.pfh.user.util.JwtUtil;
 import com.pfh.user.util.RedisUtil;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -55,16 +54,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private LoginRateLimitingProperties loginRateLimitingProperties;
-
-    private Duration IP_ATTEMPT_WINDOW_DURATION;
-
-    // Due to how Spring handles @Autowired after constructor injection,
-    // we need to initialize this after the bean is constructed not in the constructor.
-    @PostConstruct
-    public void init() {
-        this.IP_ATTEMPT_WINDOW_DURATION =
-                Duration.ofMillis(loginRateLimitingProperties.getIpAttemptWindowMs());
-    }
 
 // ============ REGISTER ============
     // Check password strength
@@ -142,13 +131,14 @@ public class AuthServiceImpl implements AuthService {
     // Extracted method to validate user credentials
     private UserEntity checkAndGetUserIfExist(LoginRequestDto request, String ip) {
         UserEntity user;
+        Duration ipFailedWindowMs = Duration.ofMillis(loginRateLimitingProperties.getIpAttemptWindowMs());
 
         // Check if the email is registered
         try {
             user = userService.getUserByEmail(request.getEmail());
         } catch (EntityNotFoundException ex) {
             // If not found, record failed attempt for IP in cache for rate limiting
-            redisUtil.recordIpFailedAttempt(ip, IP_ATTEMPT_WINDOW_DURATION);
+            redisUtil.recordFailedAttempt(ip, ipFailedWindowMs);
             auditLogService.logLoginFailure(request.getEmail(), ip, "user_not_found");
             throw new CredentialInvalidException("Invalid credentials");
         }
@@ -159,6 +149,8 @@ public class AuthServiceImpl implements AuthService {
     private void checkAndValidateUserCredentials(UserEntity user, LoginRequestDto request, String ip) {
         // Current time in system's default zone
         ZonedDateTime timeStampNow = ZonedDateTime.now(ZoneId.systemDefault());         
+        Duration ipFailedWindowMs = Duration.ofMillis(loginRateLimitingProperties.getIpAttemptWindowMs());
+        
         // Check current user status (Active, Locked, Inactive, etc.)
         switch (user.getStatus()) {
             case UserStatus.ACTIVE:
@@ -179,20 +171,20 @@ public class AuthServiceImpl implements AuthService {
 
                     userService.updateUser(user);
                 } else {
-                    redisUtil.recordIpFailedAttempt(ip, IP_ATTEMPT_WINDOW_DURATION);
+                    redisUtil.recordFailedAttempt(ip, ipFailedWindowMs);
                     throw new UserStatusException(UserStatus.LOCKED);
                 }
                 break;
             // If account is not active, throw exception with appropriate message
             default:
-                redisUtil.recordIpFailedAttempt(ip, IP_ATTEMPT_WINDOW_DURATION);
+                redisUtil.recordFailedAttempt(ip, ipFailedWindowMs);
                 throw new UserStatusException(user.getStatus());
         }
 
         // Check if the password matches
         if (!encoder.matches(request.getPassword(), user.getPasswordHash())) {
             // If not found, record failed attempt for IP in cache for rate limiting
-            redisUtil.recordIpFailedAttempt(ip, IP_ATTEMPT_WINDOW_DURATION);
+            redisUtil.recordFailedAttempt(ip, ipFailedWindowMs);
             auditLogService.logLoginFailure(request.getEmail(), ip, "invalid_credentials");
 
             // If the account is not locked, proceed to log the failed attempt
