@@ -7,7 +7,7 @@ import com.pfh.user.dto.auth.RegistrationRequestDto;
 import com.pfh.user.dto.auth.RegistrationResponseDto;
 import com.pfh.user.exception.RateLimitExceededException;
 import com.pfh.user.service.AuthService;
-import com.pfh.user.util.RedisUtil;
+import com.pfh.user.service.RedisService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -25,7 +25,7 @@ public class AuthController {
     private final AuthService authService;
 
     @Autowired  
-    private final RedisUtil redisUtil;
+    private final RedisService redisService;
 
     private static String resolveClientIp(HttpServletRequest request) {
         String header = request.getHeader("X-Forwarded-For");
@@ -52,7 +52,7 @@ public class AuthController {
         String userAgent = httpRequest.getHeader("User-Agent");
 
         // Rate limit check
-        if (redisUtil.isRateLimited(
+        if (redisService.isRateLimited(
                 AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, 
                 requesterIp, 
                 AppConstant.MAX_FAILED_IP_LOGIN_ATTEMPTS
@@ -64,7 +64,7 @@ public class AuthController {
 
         // If login failed, record attempt
         if (response.getMessage().equals("Login successful")) {
-            redisUtil.resetAttempts(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, requesterIp);
+            redisService.resetAttempts(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, requesterIp);
         } 
 
         return ResponseEntity.status(HttpStatus.OK).body(response);

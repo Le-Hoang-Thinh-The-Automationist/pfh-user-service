@@ -212,7 +212,8 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     void ac1vp2_ThreeFailedAttemptsAfterWindowReset_ShouldReturn401() throws Exception {
         // Given - invalid credentials and attempt 3 failed attempts within 15 minutes
         performThreeAttemptsFailedLoginWithoutBeingLocked();
-        Thread.sleep(ATTEMPT_WINDOW_MS);
+        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        Thread.sleep(ATTEMPT_WINDOW_MS + 1000);
 
         // When - Wait for 15 minutes to reset the window and perform 3 more failed attempts
         // Then - expect 401 Unauthorized each time and not locked
@@ -263,7 +264,8 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     void ac1ip2_FourthFailedAttemptAfterWindowReset_ShouldReturn423() throws Exception {
         // Given - invalid credentials, perform 3 failed attempts within 15 minutes and wait for 15 minutes
         performThreeAttemptsFailedLoginWithoutBeingLocked();
-        Thread.sleep(ATTEMPT_WINDOW_MS); // wait for 15 minutes
+        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        Thread.sleep(ATTEMPT_WINDOW_MS + 1000); // wait for 15 minutes
 
         // When - when 3 more failed attempts within new 15 minutes window and then 4th attempt
         // Then - expect 401 Unauthorized for first 3 and 423 Locked on 4th
@@ -349,7 +351,8 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     void ac2ip1_InvalidAttemptAfterLockPeriod_ShouldReturn401() throws Exception {
         // Given - invalid credentials and perform 4 failed attempts to lock the account, and wait for 30 minutes
         performFourAttemptsFailedLoginToLocked();
-        Thread.sleep(LOCKED_DURATION_MS);
+        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        Thread.sleep(LOCKED_DURATION_MS + 500);
 
         // when - perform 2 invalid attempts, one at local time zone and other at another time zone
         // Then - expect 401 Unauthorized for invalid credential at both attempts
@@ -373,7 +376,8 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     void ac2ip2_ValidAttemptAfterLockPeriod_ShouldReturnOk() throws Exception {
         // Given - invalid credentials and perform 4 failed attempts to lock the account, and wait for 30 minutes
         performFourAttemptsFailedLoginToLocked();
-        Thread.sleep(LOCKED_DURATION_MS);
+        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        Thread.sleep(LOCKED_DURATION_MS + 500);
 
         // When - Valid attempt after lock period at local time zone
         mockMvc.perform(post(LOGIN_URL)
@@ -389,7 +393,8 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     void ac2ip3_ValidAttemptAfterLockPeriodDifferentTimeZones_ShouldReturnOk() throws Exception {
         // Given - lock the account and wait for lock period
         performFourAttemptsFailedLoginToLocked();
-        Thread.sleep(LOCKED_DURATION_MS);
+        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        Thread.sleep(LOCKED_DURATION_MS + 500);
         String[] timeZones = {"UTC", "America/New_York", "Asia/Tokyo"};
 
         // When - valid attempt after lock period at different time zones
@@ -440,7 +445,8 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
         }
 
         // Wait for 1 minute (use IP_ATTEMPT_WINDOW_MS for test speed)
-        Thread.sleep(IP_ATTEMPT_WINDOW_MS);
+        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        Thread.sleep(IP_ATTEMPT_WINDOW_MS + 500);
 
         // Then: Perform 10 more attempts from same IP
         for (int i = 1; i <= 10; i++) {
@@ -511,7 +517,8 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
             .andExpect(status().isTooManyRequests());
 
         // Wait for 1 minute (use IP_ATTEMPT_WINDOW_MS for test speed)
-        Thread.sleep(IP_ATTEMPT_WINDOW_MS);
+        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        Thread.sleep(IP_ATTEMPT_WINDOW_MS + 500);
 
         // Then: Next attempt from same IP returns either 401 Unauthorized, or 423 Locked
         mockMvc.perform(post(LOGIN_URL)

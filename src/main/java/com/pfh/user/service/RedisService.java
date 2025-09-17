@@ -1,6 +1,7 @@
-package com.pfh.user.util;
+package com.pfh.user.service;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -11,16 +12,16 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class RedisUtil {
+public class RedisService    {
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
     // =========== FAIL AUTHEN RATE LIMITING METHODS ============
-    public boolean isRateLimited(String key, String userId, int maxAttempts) {
+    public boolean isRateLimited(String key, String id, int maxAttempts) {
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
 
-        String countStr = ops.get(key);
+        String countStr = ops.get(key + id);
 
         // If no record, create one and expiry
         int count = (countStr == null) ? 
@@ -30,18 +31,18 @@ public class RedisUtil {
         return count >= maxAttempts;        
     }
 
-    public void recordFailedAttempt(String key, String userId, Duration failWindowMs) {
+    public void recordFailedAttempt(String key, String id, Duration failWindowMs) {
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
         // Current time in system's default zone
         
-        Long count = ops.increment(key);
+        Long count = ops.increment(key + id);
         
         if (count != null && count == 1L) {
-            redisTemplate.expire(key, failWindowMs);
+            redisTemplate.expire(key + id, failWindowMs);
         }
     }
 
-    public void resetAttempts(String key, String userId) {
-        redisTemplate.delete(key);
+    public void resetAttempts(String key, String id) {
+        redisTemplate.delete(key + id);
     }
 }
