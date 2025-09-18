@@ -1,6 +1,7 @@
 package com.pfh.user.service.impl;
 
 import com.pfh.user.config.AppConstant;
+import com.pfh.user.config.LoginRateLimitingProperties;
 import com.pfh.user.dto.auth.LoginRequestDto;
 import com.pfh.user.dto.auth.LoginResponseDto;
 import com.pfh.user.dto.auth.RegistrationRequestDto;
@@ -13,6 +14,7 @@ import com.pfh.user.enums.UserStatus;
 import com.pfh.user.exception.UserStatusException;
 import com.pfh.user.service.AuditLogService;
 import com.pfh.user.service.AuthService;
+import com.pfh.user.service.RedisService;
 import com.pfh.user.service.UserService;
 import com.pfh.user.util.JwtUtil;
 
@@ -21,9 +23,13 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +48,15 @@ public class AuthServiceImpl implements AuthService {
     );
 
     private final JwtUtil jwtUtil;
+
+    @Autowired  
+    private final RedisService redisService;
+
+    @Autowired
+    private LoginRateLimitingProperties loginRateLimitingProperties;
+
+// ============ REGISTER ============
+    // Check password strength
     private static void checkPasswordStrength(String inputPassword){
         // Check if password is in common list
         if (AppConstant.COMMON_PASSWORDS.contains(inputPassword.toLowerCase())) {
@@ -63,6 +78,7 @@ public class AuthServiceImpl implements AuthService {
         
     }
 
+    // Register method
     @Override
     public RegistrationResponseDto register(RegistrationRequestDto request) {
         // Check for password if it is strong enough
@@ -80,36 +96,127 @@ public class AuthServiceImpl implements AuthService {
     }    
 
 
-    private void checkUserStatus(UserEntity user) {
-        switch (user.getStatus()) {
-            case UserStatus.ACTIVE:
-                break;
-            // If account is not active, throw exception with appropriate message
-            default:
-                throw new UserStatusException(user.getStatus());
+// ============ LOGIN ============
+
+    // Extracted method to handle failed login attempts and lock account if necessary
+    private boolean isThisFailedAttemptLockAccount(UserEntity user) {
+        // Current time in system's default zone
+        ZonedDateTime timeStampNow = ZonedDateTime.now(ZoneId.systemDefault()); 
+        String userId = user.getId().toString();
+
+        // Record the failed attempt
+        redisService.recordFailedAttempt(
+            AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_USER, 
+            userId, 
+            Duration.ofMillis(loginRateLimitingProperties.getAttemptWindowMs())
+        );
+
+        // To lock the account, the failed attempts must exceed the limit AND within the time window 
+        if (redisService.isRateLimited(
+                AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_USER, 
+                userId, 
+                AppConstant.MAX_FAILED_LOGIN_ATTEMPTS
+        )) {
+            // Set lock time to current time + lock duration
+            user.setStatus(UserStatus.LOCKED);
+            user.setLockTime(
+                timeStampNow.plus(Duration.ofMillis(loginRateLimitingProperties.getLockedDurationMs())) // lock duration
+            );
+
+            // Update user's status in DB
+            userService.updateUser(user);
+            
+            // Reset attempts after locking
+            redisService.resetAttempts(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_USER, userId);
+
+            return true; // Account is now locked
         }
+
+        return false; // Account is not locked yet
     }
 
-    @Override
-    public LoginResponseDto login(LoginRequestDto request, String ip, String userAgent) {
+    // Extracted method to validate user credentials
+    private UserEntity checkAndGetUserIfExist(LoginRequestDto request, String ip) {
         UserEntity user;
+        Duration ipFailedWindowMs = Duration.ofMillis(loginRateLimitingProperties.getIpAttemptWindowMs());
 
         // Check if the email is registered
         try {
             user = userService.getUserByEmail(request.getEmail());
         } catch (EntityNotFoundException ex) {
+            // If not found, record failed attempt for IP in cache for rate limiting
+            redisService.recordFailedAttempt(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, ip, ipFailedWindowMs);
             auditLogService.logLoginFailure(request.getEmail(), ip, "user_not_found");
             throw new CredentialInvalidException("Invalid credentials");
+        }
+        return user;
+    }
+
+    // Extracted method to validate user credentials
+    private void checkAndValidateUserCredentials(UserEntity user, LoginRequestDto request, String ip) {
+        // Current time in system's default zone
+        ZonedDateTime timeStampNow = ZonedDateTime.now(ZoneId.systemDefault());         
+        Duration ipFailedWindowMs = Duration.ofMillis(loginRateLimitingProperties.getIpAttemptWindowMs());
+        
+        // Check current user status (Active, Locked, Inactive, etc.)
+        switch (user.getStatus()) {
+            case UserStatus.ACTIVE:
+                break;
+            
+            // If the account is locked, check if the lock duration has passed
+            case UserStatus.LOCKED:
+                if(
+                    // Lock time is set 
+                    user.getLockTime() != null &&
+                    // Current time is after lock time
+                    timeStampNow.isAfter(user.getLockTime())
+                ) {
+                    
+                    // Unlock the account
+                    user.setStatus(UserStatus.ACTIVE);
+                    user.setLockTime(null);
+
+                    userService.updateUser(user);
+                } else {
+                    redisService.recordFailedAttempt(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, ip, ipFailedWindowMs);
+                    throw new UserStatusException(UserStatus.LOCKED);
+                }
+                break;
+            // If account is not active, throw exception with appropriate message
+            default:
+                redisService.recordFailedAttempt(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, ip, ipFailedWindowMs);
+                throw new UserStatusException(user.getStatus());
         }
 
         // Check if the password matches
         if (!encoder.matches(request.getPassword(), user.getPasswordHash())) {
+            // If not found, record failed attempt for IP in cache for rate limiting
+            redisService.recordFailedAttempt(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, ip, ipFailedWindowMs);
             auditLogService.logLoginFailure(request.getEmail(), ip, "invalid_credentials");
-            throw new CredentialInvalidException("Invalid credentials");
-        }
 
-        // Check user status
-        checkUserStatus(user);
+            // If the account is not locked, proceed to log the failed attempt
+            if(!isThisFailedAttemptLockAccount(user)) {
+                throw new CredentialInvalidException("Invalid credentials");
+            } else {
+                auditLogService.logLoginFailure(request.getEmail(), ip, "account_locked_due_to_failed_attempts");
+                throw new UserStatusException(UserStatus.LOCKED);
+            }
+        } else {
+            // If login is successful, reset failed attempts for user
+            redisService.resetAttempts(AppConstant.REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP, user.getId().toString());
+        }
+    }
+
+    // Login method
+    @Override
+    public LoginResponseDto login(LoginRequestDto request, String ip, String userAgent) {
+        UserEntity user;
+
+        // Check if the email is registered
+        user = checkAndGetUserIfExist(request, ip);
+
+        // Validate credentials and check status
+        checkAndValidateUserCredentials(user, request, ip);
 
         auditLogService.logLoginSuccess(
             String.valueOf(user.getId()),

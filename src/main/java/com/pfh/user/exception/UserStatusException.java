@@ -18,7 +18,7 @@ public class UserStatusException extends RuntimeException {
             case UserStatus.DISABLED -> "Your account is disabled. Please contact support.";
             case UserStatus.SUSPENDED -> "Your account is suspended. Please contact support.";
             case UserStatus.EXPIRED -> "Your account has expired. Please renew.";
-            default -> "Unknown user status.";
+            default -> "Unknown user status: " + status;
         };
     }
 

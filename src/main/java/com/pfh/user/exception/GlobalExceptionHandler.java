@@ -153,5 +153,25 @@ public class GlobalExceptionHandler {
                 .status(ex.getHttpStatus())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(errorResponse);
-    }    
+    }
+
+    // Rate limit exceeded
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ErrorResponseDto> handleRateLimitExceeded(RateLimitExceededException ex) {
+        FieldErrorDto fieldError = new FieldErrorDto("userStatus", ex.getMessage());  
+        
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+            HttpStatus.TOO_MANY_REQUESTS.value(),          
+            ex.getMessage(),                      
+            Instant.now(),                        
+            Collections.singletonList(fieldError) 
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse);
+    }
+
+
 }

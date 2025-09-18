@@ -24,4 +24,11 @@ public final class AppConstant {
         "abc123abc123"        // 12 chars: repeated basic pattern
     );
 
+    // Login attempt limits
+    public static final int MAX_FAILED_LOGIN_ATTEMPTS = 4;
+    public static final int MAX_FAILED_IP_LOGIN_ATTEMPTS = 10;
+
+    // Redis key prefixes
+    public static final String REDIS_KEY_PREFIX_FAILED_ATTEMPT_IP = "login:ip:";
+    public static final String REDIS_KEY_PREFIX_FAILED_ATTEMPT_USER = "login:user:";
 }

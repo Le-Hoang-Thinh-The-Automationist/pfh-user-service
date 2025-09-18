@@ -58,4 +58,10 @@ public class UserServiceImpl implements UserService {
                     () -> new EntityNotFoundException("User Entity not found")
                 );
     }
+
+    @Override
+    public void updateUser(UserEntity user) {
+        userRepository.save(user);      
+    }
+
 }
