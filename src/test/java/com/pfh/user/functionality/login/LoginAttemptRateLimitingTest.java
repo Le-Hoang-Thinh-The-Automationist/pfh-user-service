@@ -7,7 +7,8 @@
  *
  *      ✅ **Acceptance Criteria with Equivalence Partitions:**
  *
- *          * **AC.1:** Maximum 3 failed login attempts per user within 15 minutes
+ *          * **AC.1:** Maximum 3 failed login attempts per user within 15 minutes (wrong password only)
+ *              Note: The time tolerance for time-based tests is set to 1000ms to account for execution delays.
  *              - Valid Partitions (VP):
  *                  VP.1: Exactly 3 failed attempts (wrong password only) in under 15 → returns 401 Unauthorized (locks on next attempt)
  *                  VP.2: - 1) Perform like in VP1 first and then wait for 15 minutes since the first attempt. 
@@ -19,7 +20,8 @@
  *                        - 2) 4 failed attempt within 15 minutes → returns 423 Locked at the 4th attempt
  *                  IP.3: 4 failed attempt at four different time zone in under 15 minutes → returns 423 Locked
  *
- *          * **AC.2:** Account temporarily locked for 30 minutes after 3 failed attempts
+ *          * **AC.2:** Account temporarily locked for 30 minutes after 3 failed attempts (locks on 4th attempt)
+ *              Note: The time tolerance for time-based tests is set to 1000ms to account for execution delays.
  *              - Valid Partitions (VP):
  *                  VP.1: Perform valid and invalid login attempt (wrong password only) during lock period in under 30 minutes → returns 423 Locked
  *                  VP.2: Do like VP.1 but at different time zones in under 30 minutes → returns 423 Locked
@@ -30,6 +32,7 @@
  *                  IP.3: Do like IP.2 but at different time zones in under 30 minutes → returns successful login for valid credential
  *
  *          * **AC.3:** IP-based rate limiting: 10 attempts per IP per minute
+ *              Note: The time tolerance for time-based tests is set to 1000ms to account for execution delays.
  *              - Valid Partitions (VP):
  *                  VP.1: 1-10 attempts from same IP within 1 minute → returns either 401 Unauthorized, or 423 Locked if user gets locked 
  *                  VP.2: - 1) 1-10 attempts from same IP within 1 minute. Wait for 1 minute, 
@@ -212,7 +215,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     void ac1vp2_ThreeFailedAttemptsAfterWindowReset_ShouldReturn401() throws Exception {
         // Given - invalid credentials and attempt 3 failed attempts within 15 minutes
         performThreeAttemptsFailedLoginWithoutBeingLocked();
-        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        // Add a small buffer (1000ms) to ensure the lock period has definitely passed
         Thread.sleep(ATTEMPT_WINDOW_MS + 1000);
 
         // When - Wait for 15 minutes to reset the window and perform 3 more failed attempts
@@ -264,7 +267,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     void ac1ip2_FourthFailedAttemptAfterWindowReset_ShouldReturn423() throws Exception {
         // Given - invalid credentials, perform 3 failed attempts within 15 minutes and wait for 15 minutes
         performThreeAttemptsFailedLoginWithoutBeingLocked();
-        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        // Add a small buffer (1000ms) to ensure the lock period has definitely passed
         Thread.sleep(ATTEMPT_WINDOW_MS + 1000); // wait for 15 minutes
 
         // When - when 3 more failed attempts within new 15 minutes window and then 4th attempt
@@ -351,7 +354,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     void ac2ip1_InvalidAttemptAfterLockPeriod_ShouldReturn401() throws Exception {
         // Given - invalid credentials and perform 4 failed attempts to lock the account, and wait for 30 minutes
         performFourAttemptsFailedLoginToLocked();
-        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        // Add a small buffer (1000ms) to ensure the lock period has definitely passed
         Thread.sleep(LOCKED_DURATION_MS + 1000);
 
         // when - perform 2 invalid attempts, one at local time zone and other at another time zone
@@ -376,7 +379,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     void ac2ip2_ValidAttemptAfterLockPeriod_ShouldReturnOk() throws Exception {
         // Given - invalid credentials and perform 4 failed attempts to lock the account, and wait for 30 minutes
         performFourAttemptsFailedLoginToLocked();
-        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        // Add a small buffer (1000ms) to ensure the lock period has definitely passed
         Thread.sleep(LOCKED_DURATION_MS + 1000);
 
         // When - Valid attempt after lock period at local time zone
@@ -393,7 +396,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
     void ac2ip3_ValidAttemptAfterLockPeriodDifferentTimeZones_ShouldReturnOk() throws Exception {
         // Given - lock the account and wait for lock period
         performFourAttemptsFailedLoginToLocked();
-        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        // Add a small buffer (1000ms) to ensure the lock period has definitely passed
         Thread.sleep(LOCKED_DURATION_MS + 1000);
         String[] timeZones = {"UTC", "America/New_York", "Asia/Tokyo"};
 
@@ -445,7 +448,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
         }
 
         // Wait for 1 minute (use IP_ATTEMPT_WINDOW_MS for test speed)
-        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        // Add a small buffer (1000ms) to ensure the lock period has definitely passed
         Thread.sleep(IP_ATTEMPT_WINDOW_MS + 1000);
 
         // Then: Perform 10 more attempts from same IP
@@ -517,7 +520,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
             .andExpect(status().isTooManyRequests());
 
         // Wait for 1 minute (use IP_ATTEMPT_WINDOW_MS for test speed)
-        // Add a small buffer (500ms) to ensure the lock period has definitely passed
+        // Add a small buffer (1000ms) to ensure the lock period has definitely passed
         Thread.sleep(IP_ATTEMPT_WINDOW_MS + 1000);
 
         // Then: Next attempt from same IP returns either 401 Unauthorized, or 423 Locked
@@ -562,24 +565,24 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
         }
     }
 
-    // --- AC.4 Tests ---
+//     // --- AC.4 Tests ---
 
-    @Test
-    @DisplayName("[Login Attempt Rate Limiting] AC.4 - VP.1: Rate limit violations logged with IP, timestamp, and user identifier")
-    void ac4vp1_RateLimitViolation_ShouldBeLogged() throws Exception {
-        // Given
-        var request = invalidCredentials;
-        String clientIp = "203.0.113.5";
+//     @Test
+//     @DisplayName("[Login Attempt Rate Limiting] AC.4 - VP.1: Rate limit violations logged with IP, timestamp, and user identifier")
+//     void ac4vp1_RateLimitViolation_ShouldBeLogged() throws Exception {
+//         // Given
+//         var request = invalidCredentials;
+//         String clientIp = "203.0.113.5";
 
-        // When: exceed IP limit
-        for (int i = 1; i <= 11; i++) {
-            mockMvc.perform(post(LOGIN_URL)
-                .header("X-Forwarded-For", clientIp)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)));
-        }
+//         // When: exceed IP limit
+//         for (int i = 1; i <= 11; i++) {
+//             mockMvc.perform(post(LOGIN_URL)
+//                 .header("X-Forwarded-For", clientIp)
+//                 .contentType(MediaType.APPLICATION_JSON)
+//                 .content(objectMapper.writeValueAsString(request)));
+//         }
 
-        // Then
-        // TODO: Verify audit log entry contains IP, timestamp, and user identifier
-    }
+//         // Then
+//         // TODO: Verify audit log entry contains IP, timestamp, and user identifier
+//     }
 }

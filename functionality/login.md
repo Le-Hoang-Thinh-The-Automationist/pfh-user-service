@@ -35,9 +35,9 @@
 * **So that** we prevent brute force attacks on customer accounts
 
 ✅ **Acceptance Criteria:**
-- [ ] **AC.1:** Maximum 3 failed login attempts per user within 15 minutes
-- [ ] **AC.2:** Account temporarily locked for 30 minutes after 3 failed attempts
-- [ ] **AC.3:** IP-based rate limiting: 10 attempts per IP per minute
+- [X] **AC.1:** Maximum 3 failed login attempts per user within 15 minutes
+- [X] **AC.2:** Account temporarily locked for 30 minutes after 3 failed attempts
+- [X] **AC.3:** IP-based rate limiting: 10 attempts per IP per minute
 - [ ] **AC.4:** Rate limit violations logged with IP, timestamp, and user identifier
 
 ---

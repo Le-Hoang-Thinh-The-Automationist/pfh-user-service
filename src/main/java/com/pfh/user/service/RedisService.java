@@ -1,7 +1,6 @@
 package com.pfh.user.service;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
