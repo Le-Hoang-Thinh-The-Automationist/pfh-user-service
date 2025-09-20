@@ -21,10 +21,12 @@ on:
 run-name: "[QA]: ${{ github.event_name }} at ${{ github.ref_name }} (${{ github.sha }})"
 
 jobs:
-  set-environment:
+  set-configuration:
+    name: Setup configuration based on the trigger event
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.determine.outputs.environment }}
+      has_open_pr_to_qa: ${{ steps.check_pr.outputs.has_open_pr_to_qa }}
     steps:
       - id: determine
         name: Set environment to QA
@@ -32,9 +34,26 @@ jobs:
           echo "environment=QA" >> $GITHUB_OUTPUT
           echo "The matching deployment's environment is QA"
 
+      - name: Install GitHub CLI
+        run: sudo apt-get update && sudo apt-get install -y gh
+
+      - name: Check if branch has open PR to QA
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="${{ github.event.inputs.pull_request_branch }}"
+          pr_count=$(gh pr list --base qa --head "$branch" --state open --json number --jq 'length')
+          if [ "$pr_count" -gt 0 ]; then
+            echo "has_open_pr_to_qa=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_open_pr_to_qa=false" >> $GITHUB_OUTPUT
+          fi
+
   call-pr-ci-workflow:
-    needs: set-environment
-    if: github.event_name == 'pull_request'
+    needs: set-configuration
+    # Only run this job if it's a PR event or if the specified branch has an open PR to QA when triggered manually
+    if: ${{ github.event_name== 'pull_request' || (github.event_name== 'workflow_dispatch' && needs.set-configuration.outputs.has_open_pr_to_qa == 'true') }} 
     uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/service-workflow.yml@main
     with:
       # Mandatory inputs
