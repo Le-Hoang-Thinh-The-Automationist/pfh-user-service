@@ -1,0 +1,22 @@
+name: QA Workflow Services
+
+on:
+  workflow_dispatch:
+    inputs:
+      # ============ INPUT CONFIGURATION ============
+      pull_request_branch:
+        description: Choose the branch of the pull request that wish to merge to QA
+        required: true
+        type: string
+        
+run-name: "[QA]: ${{ github.event_name }} at ${{ github.ref_name }} (${{ github.sha }})"
+
+jobs:
+  set-configuration:
+    name: Setup configuration based on the trigger event
+    runs-on: ubuntu-latest
+    steps:
+      - id: determine
+        name: Set environment to QA
+        run: |
+          echo "dummy code"
