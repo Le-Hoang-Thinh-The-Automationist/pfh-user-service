@@ -52,6 +52,7 @@ jobs:
             echo "has_open_pr_to_qa=false" >> $GITHUB_OUTPUT
           fi
 
+  # This job will fail if the branch does not have an open PR to QA when triggered manually
   manual-trigger-branch-doest-not-have-pr-to-qa:
     name: Manual trigger on branch that does not have PR to QA
     runs-on: ubuntu-latest
@@ -64,6 +65,7 @@ jobs:
           echo "Please create a PR to QA before triggering this workflow manually."
           exit 1
 
+  # This job will run if it's a PR event or if the specified branch has an open PR to QA when triggered manually
   call-pr-ci-workflow:
     needs: set-configuration
     # Only run this job if it's a PR event or if the specified branch has an open PR to QA when triggered manually
