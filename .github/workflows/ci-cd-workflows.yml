@@ -4,7 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - '**'
+      - 'qa'
+
+# This is the name shown in the Actions run list
+run-name: "[QA]: ${{ github.event.head_commit.message }}  (event ${{ github.event_name }} at ${{ github.sha }})"
 
 jobs:
   set-environment:
