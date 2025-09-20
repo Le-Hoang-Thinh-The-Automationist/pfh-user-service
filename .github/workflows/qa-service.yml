@@ -8,15 +8,76 @@ on:
         description: Choose the branch of the pull request that wish to merge to QA
         required: true
         type: string
-        
+  # Any feature branch PR to QA or direct push to QA will trigger this workflow
+  pull_request:
+    types:
+      - opened       # Only when PR is first opened
+    branches:
+      - qa           # Target branch (base) must be QA
+  push:
+    branches:
+      - 'qa'
+
 run-name: "[QA]: ${{ github.event_name }} at ${{ github.ref_name }} (${{ github.sha }})"
 
 jobs:
   set-configuration:
     name: Setup configuration based on the trigger event
     runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.determine.outputs.environment }}
+      has_open_pr_to_qa: ${{ steps.check_pr.outputs.has_open_pr_to_qa }}
     steps:
       - id: determine
         name: Set environment to QA
         run: |
-          echo "dummy code"
+          echo "environment=QA" >> $GITHUB_OUTPUT
+          echo "The matching deployment's environment is QA"
+
+      - name: Install GitHub CLI
+        run: sudo apt-get update && sudo apt-get install -y gh
+      
+      - uses: actions/checkout@v4
+
+      - name: Check if branch has open PR to QA
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="${{ github.event.inputs.pull_request_branch }}"
+          pr_count=$(gh pr list --base qa --head "$branch" --state open --json number --jq 'length')
+          if [ "$pr_count" -gt 0 ]; then
+            echo "has_open_pr_to_qa=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_open_pr_to_qa=false" >> $GITHUB_OUTPUT
+          fi
+
+  # This job will fail if the branch does not have an open PR to QA when triggered manually
+  manual-trigger-branch-doest-not-have-pr-to-qa:
+    name: Manual trigger on branch that does not have PR to QA
+    runs-on: ubuntu-latest
+    needs: set-configuration
+    if: ${{ github.event_name== 'workflow_dispatch' && needs.set-configuration.outputs.has_open_pr_to_qa == 'false' }} 
+    steps:
+      - name: Fail the workflow
+        run: |
+          echo "The branch '${{ github.event.inputs.pull_request_branch }}' does not have an open PR to QA."
+          echo "Please create a PR to QA before triggering this workflow manually."
+          exit 1
+
+  # This job will run if it's a PR event or if the specified branch has an open PR to QA when triggered manually
+  call-pr-ci-workflow:
+    needs: set-configuration
+    # Only run this job if it's a PR event or if the specified branch has an open PR to QA when triggered manually
+    if: ${{ github.event_name== 'pull_request' || (github.event_name== 'workflow_dispatch' && needs.set-configuration.outputs.has_open_pr_to_qa == 'true') }} 
+    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/service-workflow.yml@main
+    with:
+      # Mandatory inputs
+      environment: ${{ needs.set-environment.outputs.environment }}
+      service-name: pfh-user-service
+
+      # Custom
+      custom-test-script: ./services-functionaliy-test.sh -t unit
+      custom-build-script: services-functionaliy-test.sh -t int
+    secrets:
+      deploy_token: ${{ secrets.DEPLOY_TOKEN }}
