@@ -2,6 +2,12 @@ name: QA Workflow Services
 
 on:
   workflow_dispatch:
+    inputs:
+      # ============ INPUT CONFIGURATION ============
+      pull_request_branch:
+        description: Choose the branch of the pull request that wish to merge to QA
+        required: true
+        type: string
   # Any feature branch PR to QA or direct push to QA will trigger this workflow
   pull_request:
     types:
@@ -12,7 +18,7 @@ on:
     branches:
       - 'qa'
 
-run-name: "[QA]: ${{ github.event.head_commit.message }}  (event ${{ github.event_name }} at ${{ github.sha }})"
+run-name: "[QA]: ${{ github.event_name }} at ${{ github.ref_name }} (${{ github.sha }})"
 
 jobs:
   set-environment:
@@ -26,8 +32,9 @@ jobs:
           echo "environment=QA" >> $GITHUB_OUTPUT
           echo "The matching deployment's environment is QA"
 
-  call-service-workflow:
+  call-pr-ci-workflow:
     needs: set-environment
+    if: github.event_name == 'pull_request'
     uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/service-workflow.yml@main
     with:
       # Mandatory inputs
