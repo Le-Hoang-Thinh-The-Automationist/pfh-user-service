@@ -37,3 +37,5 @@ jobs:
       # Custom
       custom-test-script: ./services-functionaliy-test.sh -t unit
       custom-build-script: services-functionaliy-test.sh -t int
+    secrets:
+      deploy_token: ${{ secrets.DEPLOY_TOKEN }}
