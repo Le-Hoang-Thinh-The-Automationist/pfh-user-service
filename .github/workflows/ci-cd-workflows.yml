@@ -1,12 +1,17 @@
-name: Call Service Workflow
+name: QA Workflow Services
 
 on:
   workflow_dispatch:
+  # Any feature branch PR to QA or direct push to QA will trigger this workflow
+  pull_request:
+    types:
+      - opened       # Only when PR is first opened
+    branches:
+      - qa           # Target branch (base) must be QA
   push:
     branches:
       - 'qa'
 
-# This is the name shown in the Actions run list
 run-name: "[QA]: ${{ github.event.head_commit.message }}  (event ${{ github.event_name }} at ${{ github.sha }})"
 
 jobs:
@@ -16,33 +21,10 @@ jobs:
       environment: ${{ steps.determine.outputs.environment }}
     steps:
       - id: determine
-        name: Categorize deployment's environment according to git branch
+        name: Set environment to QA
         run: |
-          DEPLOYMENT_ENV=Feature
-          case "${{ github.ref_name }}" in
-            dev)
-              echo "environment=Development" >> $GITHUB_OUTPUT
-              DEPLOYMENT_ENV=Development
-              ;;
-            qa)
-              echo "environment=QA" >> $GITHUB_OUTPUT
-              DEPLOYMENT_ENV=QA
-              ;;
-            stag)
-              echo "environment=UAT" >> $GITHUB_OUTPUT
-              DEPLOYMENT_ENV=UAT
-              ;;
-            prod)
-              echo "environment=Production" >> $GITHUB_OUTPUT
-              DEPLOYMENT_ENV=Production
-              ;;
-            *)
-              echo "environment=Feature" >> $GITHUB_OUTPUT
-              DEPLOYMENT_ENV=Feature
-              ;;
-          esac
-          echo "The matching deployment's environment is $DEPLOYMENT_ENV"
-
+          echo "environment=QA" >> $GITHUB_OUTPUT
+          echo "The matching deployment's environment is QA"
 
   call-service-workflow:
     needs: set-environment
@@ -55,6 +37,3 @@ jobs:
       # Custom
       custom-test-script: ./services-functionaliy-test.sh -t unit
       custom-build-script: services-functionaliy-test.sh -t int
-    secrets:
-      deploy_token: ${{ secrets.DEPLOY_TOKEN }}
-
