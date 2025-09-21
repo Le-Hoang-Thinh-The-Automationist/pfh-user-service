@@ -72,6 +72,7 @@ jobs:
       custom-build-script: services-functionaliy-test.sh -t int
 
       # Security and compliance check stage
-      security-and-compliance-check-enable: ${{ needs.set-configuration.outputs.security-stage-enable }}
+      # Use fromJSON to convert string "true"/"false" to boolean true/false
+      security-and-compliance-check-enable: ${{ fromJSON(needs.set-configuration.outputs.security-stage-enable) }}
     secrets:
       deploy_token: ${{ secrets.DEPLOY_TOKEN }}
