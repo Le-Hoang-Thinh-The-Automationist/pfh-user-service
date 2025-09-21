@@ -54,7 +54,7 @@ jobs:
     name: Manual trigger on branch that does not have PR to QA
     runs-on: ubuntu-latest
     needs: set-configuration
-    if: ${{ github.event_name== 'workflow_dispatch' && needs.set-configuration.outputs.has_open_pr_to_qa == 'false' }} 
+    if: ${{ github.event_name== 'workflow_dispatch' && needs.set-configuration.outputs.has_open_pr_to_qa == 'false' && github.ref_name != 'qa' && !startsWith(github.ref_name, 'qa/') }} 
     steps:
       - name: Fail the workflow
         run: |
