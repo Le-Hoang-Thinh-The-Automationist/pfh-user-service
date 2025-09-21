@@ -55,6 +55,7 @@ jobs:
           else
             echo "security-stage-enable=$INPUT" >> "$GITHUB_OUTPUT"
           fi
+          echo "Security and compliance check stage enable: $INPUT"
 
   # This job will run if it's a PR event or if the specified branch has an open PR to QA when triggered manually
   call-fast-feedback-ci-workflow:
