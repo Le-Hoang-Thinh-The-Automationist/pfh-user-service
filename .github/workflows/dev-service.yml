@@ -15,7 +15,12 @@ on:
         description: Name of the service to run fast-feedback CI
         required: true
         type: string
-
+      # ============ ADDITIONAL STAGE ============
+      security-stage-enable :
+          description: Enable security and compliance check stage (true/false)
+          type: boolean
+          required: false
+          default: false
   push:
     # Any branch except main, prod, stag, qa will trigger this workflow
     branches-ignore:
@@ -23,6 +28,7 @@ on:
       - 'prod'
       - 'stag'
       - 'qa'
+      - 'qa/**'
 
 run-name: "[DEV] ${{ github.ref_name }}: (${{ github.sha }})"
 
@@ -32,12 +38,23 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.determine.outputs.environment }}
+      security-stage-enable: ${{ steps.security-stage-check.outputs.security-stage-enable }}
     steps:
       - id: determine
         name: Set environment to DEV
         run: |
           echo "environment=DEV" >> $GITHUB_OUTPUT
-          echo "The matching deployment's environment is DEV"  
+          echo "The matching deployment's environment is DEV"
+
+      - id: security-stage-check
+        name: Check if security and compliance check stage is enabled
+        run: |
+          INPUT="${{ github.event.inputs.security-stage-enable || '' }}"
+          if [ -z "$INPUT" ]; then
+            echo "security-stage-enable=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "security-stage-enable=$INPUT" >> "$GITHUB_OUTPUT"
+          fi
 
   # This job will run if it's a PR event or if the specified branch has an open PR to QA when triggered manually
   call-fast-feedback-ci-workflow:
@@ -47,11 +64,14 @@ jobs:
     uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/DEV_commit-fast-feedback.yml@feature/16-infrastructure-pipeline-new-qa-mechanism
     with:
       # Mandatory inputs
-      environment: ${{ needs.set-environment.outputs.environment }}
+      environment: ${{ needs.set-configuration.outputs.environment }}
       service-name: pfh-user-service
 
       # Custom
       custom-test-script: ./services-functionaliy-test.sh -t unit
       custom-build-script: services-functionaliy-test.sh -t int
+
+      # Security and compliance check stage
+      security-and-compliance-check-enable: ${{ needs.set-configuration.outputs.security-stage-enable }}
     secrets:
       deploy_token: ${{ secrets.DEPLOY_TOKEN }}
