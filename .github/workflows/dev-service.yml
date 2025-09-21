@@ -45,3 +45,18 @@ jobs:
           echo "environment=DEV" >> $GITHUB_OUTPUT
           echo "The matching deployment's environment is DEV"  
 
+  # This job will run if it's a PR event or if the specified branch has an open PR to QA when triggered manually
+  call-fast-feedback-ci-workflow:
+    needs: set-configuration
+    # Only run this job if it's a PR event or if the specified branch has an open PR to QA when triggered manually
+    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/DEV_commit-fast-feedback.yml@main
+    with:
+      # Mandatory inputs
+      environment: ${{ needs.set-environment.outputs.environment }}
+      service-name: pfh-user-service
+
+      # Custom
+      custom-test-script: ./services-functionaliy-test.sh -t unit
+      custom-build-script: services-functionaliy-test.sh -t int
+    secrets:
+      deploy_token: ${{ secrets.DEPLOY_TOKEN }}
