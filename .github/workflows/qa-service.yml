@@ -5,7 +5,8 @@ on:
   # Any feature branch PR to QA or direct push to QA will trigger this workflow
   pull_request:
     types:
-      - opened       # Only when PR is first opened
+      - opened       # Trigger PR is first opened
+      - reopened     # Trigger PR is reopened 
     branches:
       - qa           # Target branch (base) must be QA
       - 'qa/**'
