@@ -48,8 +48,9 @@ jobs:
   # This job will run if it's a PR event or if the specified branch has an open PR to QA when triggered manually
   call-fast-feedback-ci-workflow:
     needs: set-configuration
+    name: Fast-feedback at Commit Stage
     # Only run this job if it's a PR event or if the specified branch has an open PR to QA when triggered manually
-    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/DEV_commit-fast-feedback.yml@main
+    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/DEV_commit-fast-feedback.yml@feature/16-infrastructure-pipeline-new-qa-mechanism
     with:
       # Mandatory inputs
       environment: ${{ needs.set-environment.outputs.environment }}
