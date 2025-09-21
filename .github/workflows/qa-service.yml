@@ -7,6 +7,7 @@ on:
     types:
       - opened       # Trigger PR is first opened
       - reopened     # Trigger PR is reopened 
+      - synchronize  # New push where the branch has PR
     branches:
       - qa           # Target branch (base) must be QA
       - 'qa/**'
