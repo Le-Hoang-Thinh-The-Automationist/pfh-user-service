@@ -5,16 +5,10 @@ on:
     inputs:
       # ============ INPUT CONFIGURATION ============
       # Choose brach or commit to run fast-feedback CI
-      fast-feed-back-type:
-        description: Choose the branch or commit to run fast-feedback CI
-        required: true
-        type: choice
-        options:
-          - branch
-          - commit
-      identifier:
-        description: The identifier of the branch or commit to run fast-feedback CI
-        required: true
+      commit-identifier:
+        description: "The commit SHA (default: latest commit of the current branch)"
+        required: false
+        default: HEAD
         type: string
       # Choose the service to run fast-feedback CI
       service-name:
