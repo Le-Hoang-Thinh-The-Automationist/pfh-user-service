@@ -1,0 +1,47 @@
+name: Developer Workflow Services
+
+on:
+  workflow_dispatch:
+    inputs:
+      # ============ INPUT CONFIGURATION ============
+      # Choose brach or commit to run fast-feedback CI
+      fast-feed-back-type:
+        description: Choose the branch or commit to run fast-feedback CI
+        required: true
+        type: choice
+        options:
+          - branch
+          - commit
+      identifier:
+        description: The identifier of the branch or commit to run fast-feedback CI
+        required: true
+        type: string
+      # Choose the service to run fast-feedback CI
+      service-name:
+        description: Name of the service to run fast-feedback CI
+        required: true
+        type: string
+
+  push:
+    # Any branch except main, prod, stag, qa will trigger this workflow
+    branches-ignore:
+      - 'main'
+      - 'prod'
+      - 'stag'
+      - 'qa'
+
+run-name: "[DEV] ${{ github.ref_name }}: (${{ github.sha }})"
+
+jobs:
+  set-configuration:
+    name: Setup configuration based on the trigger event
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.determine.outputs.environment }}
+    steps:
+      - id: determine
+        name: Set environment to DEV
+        run: |
+          echo "environment=DEV" >> $GITHUB_OUTPUT
+          echo "The matching deployment's environment is DEV"  
+
