@@ -37,6 +37,7 @@ jobs:
     name: Setup configuration based on the trigger event
     runs-on: ubuntu-latest
     outputs:
+      has_open_pr_to_qa: ${{ steps.check_pr.outputs.has_open_pr_to_qa }}
       security-stage-enable: ${{ steps.security-stage-check.outputs.security-stage-enable }}
     steps:
       - id: security-stage-check
@@ -50,10 +51,30 @@ jobs:
           fi
           echo "Security and compliance check stage enable: $INPUT"
 
+      - name: Install GitHub CLI
+        run: sudo apt-get update && sudo apt-get install -y gh
+      
+      - uses: actions/checkout@v4
+
+      # [QA Workflow Toolbox]-[AC.4]: Branch Parameterization for Manual Runs
+      - name: Check if branch has open PR to QA
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="${{ github.ref_name }}"
+          pr_count=$(gh pr list --base qa --head "$branch" --state open --json number --jq 'length')
+          if [ "$pr_count" -gt 0 ]; then
+            echo "has_open_pr_to_qa=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_open_pr_to_qa=false" >> $GITHUB_OUTPUT
+          fi  
+
   # This job will run if it's a PR event or if the specified branch has an open PR to QA when triggered manually
   call-fast-feedback-ci-workflow:
     needs: set-configuration
     name: Fast-feedback at Commit Stage
+    if: ${{ needs.set-configuration.outputs.has_open_pr_to_qa == 'false' }}
     # Only run this job if it's a PR event or if the specified branch has an open PR to QA when triggered manually
     uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/DEV_commit-fast-feedback.yml@feature/16-infrastructure-pipeline-new-qa-mechanism
     with:
@@ -69,3 +90,12 @@ jobs:
       security-and-compliance-check-enable: ${{ fromJSON(needs.set-configuration.outputs.security-stage-enable) }}
     secrets:
       deploy_token: ${{ secrets.DEPLOY_TOKEN }}
+
+  skip-ci-condition:
+    needs: set-configuration
+    name: Fast feedback CI skips
+    runs-on: ubuntu-latest
+    if: ${{ needs.set-configuration.outputs.has_open_pr_to_qa == 'true' }}
+    steps:
+      - name: CI skip due to having PR merged to QA
+        run: echo "CI skip"
