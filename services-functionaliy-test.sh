@@ -53,7 +53,7 @@ while [[ $# -gt 0 ]]; do
         echo "Error: '$1' requires a non-empty argument."
         usage
       fi
-      SCOPE="$2"
+      TEST_SCOPE="$2"
       shift 2
       ;;
     -h|--help)
