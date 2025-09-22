@@ -30,15 +30,16 @@ on:
       - 'qa'
       - 'qa/**'
 
-run-name: "[DEV] ${{ github.ref_name }}: (${{ github.sha }})"
+run-name: "[DEV]: ${{ github.event.head_commit.message }} at ${{ github.ref_name }} triggered by ${{ github.event_name }}"
 
 jobs:
   set-configuration:
     name: Setup configuration based on the trigger event
     runs-on: ubuntu-latest
     outputs:
-      has_open_pr_to_qa: ${{ steps.check_pr.outputs.has_open_pr_to_qa }}
       security-stage-enable: ${{ steps.security-stage-check.outputs.security-stage-enable }}
+      functionality_test_scope: ${{ steps.extract.outputs.has_open_pr_to_qa }}
+      has_open_pr_to_qa: ${{ steps.check_pr.outputs.has_open_pr_to_qa }}
     steps:
       - id: security-stage-check
         name: Check if security and compliance check stage is enabled
@@ -56,14 +57,21 @@ jobs:
       
       - uses: actions/checkout@v4
 
-      - name: Load .target-test.env configuration
+      - name: Extract functionality test scope at git push
+        id: extract
         run: |
-          echo "Loading .target-test.env file..."
-          while IFS='=' read -r key value; do
-            if [[ ! -z "$key" && "$key" != \#* ]]; then
-              echo "$key=$value" >> $GITHUB_ENV
-            fi
-          done < .github/.target-test.env
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          echo "Commit message: $COMMIT_MSG"
+
+          # Extract text inside [func:...]
+          FUNC_PATH=$(echo "$COMMIT_MSG" | grep -oP '(?<=\[func:)[^]]+' || true)
+
+          # Default to '**' if nothing found
+          if [ -z "$FUNC_PATH" ]; then
+            FUNC_PATH="**"
+          fi
+
+          echo "functionality_test_scope=$FUNC_PATH" >> $GITHUB_OUTPUT
 
       # [QA Workflow Toolbox]-[AC.4]: Branch Parameterization for Manual Runs
       - name: Check if branch has open PR to QA
@@ -92,8 +100,7 @@ jobs:
 
       # Custom
       custom-test-script: ./services-functionaliy-test.sh -t unit
-      # '$FUNCTIONALITY' is created in the .target-test.env file
-      custom-build-script: services-functionaliy-test.sh -t int -s $FUNCTIONALITY
+      custom-build-script: services-functionaliy-test.sh -t int -s '${{ needs.set-configuration.outputs.functionality_test_scope }}'
 
       # Security and compliance check stage
       # Use fromJSON to convert string "true"/"false" to boolean true/false
