@@ -75,19 +75,19 @@ jobs:
           SERVICE="ALL"
           
           # Check for feat(...)
-          if [[ "$COMMIT_MSG" =~ feat\(([^)]+)\) ]]; then
+          if [[ "$COMMIT_MSG" =~ "feat\(([^)]+)\)" ]]; then
             SERVICE="${BASH_REMATCH[1]}"
             MATCHED_VALUE="${BASH_REMATCH[2]}"
           # Check for test(...)
-          elif [[ "$COMMIT_MSG" =~ test\(([^)]+)\) ]]; then
+          elif [[ "$COMMIT_MSG" =~ "test\(([^)]+)\)" ]]; then
             SERVICE="${BASH_REMATCH[1]}"
             MATCHED_VALUE="${BASH_REMATCH[2]}"
           # Check for refactor(...)
-          elif [[ "$COMMIT_MSG" =~ refactor\(([^)]+)\) ]]; then
+          elif [[ "$COMMIT_MSG" =~ "refactor\(([^)]+)\)" ]]; then
             SERVICE="${BASH_REMATCH[1]}"
             MATCHED_VALUE="${BASH_REMATCH[2]}"
           # Check for perf(...)
-          elif [[ "$COMMIT_MSG" =~ perf\(([^)]+)\) ]]; then
+          elif [[ "$COMMIT_MSG" =~ "perf\(([^)]+)\)" ]]; then
             SERVICE="${BASH_REMATCH[1]}"
             MATCHED_VALUE="${BASH_REMATCH[2]}"
           fi
