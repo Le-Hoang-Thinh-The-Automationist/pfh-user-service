@@ -56,6 +56,15 @@ jobs:
       
       - uses: actions/checkout@v4
 
+      - name: Load .target-test.env configuration
+        run: |
+          echo "Loading .target-test.env file..."
+          while IFS='=' read -r key value; do
+            if [[ ! -z "$key" && "$key" != \#* ]]; then
+              echo "$key=$value" >> $GITHUB_ENV
+            fi
+          done < .github/.target-test.env
+
       # [QA Workflow Toolbox]-[AC.4]: Branch Parameterization for Manual Runs
       - name: Check if branch has open PR to QA
         id: check_pr
@@ -83,7 +92,8 @@ jobs:
 
       # Custom
       custom-test-script: ./services-functionaliy-test.sh -t unit
-      custom-build-script: services-functionaliy-test.sh -t int
+      # '$FUNCTIONALITY' is created in the .target-test.env file
+      custom-build-script: services-functionaliy-test.sh -t int -s $FUNCTIONALITY
 
       # Security and compliance check stage
       # Use fromJSON to convert string "true"/"false" to boolean true/false
