@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       security-stage-enable: ${{ steps.security-stage-check.outputs.security-stage-enable }}
-      functionality_test_scope: ${{ steps.extract.outputs.has_open_pr_to_qa }}
+      functionality_test_scope: ${{ steps.extract.outputs.functionality_test_scope }}
       has_open_pr_to_qa: ${{ steps.check_pr.outputs.has_open_pr_to_qa }}
     steps:
       - id: security-stage-check
