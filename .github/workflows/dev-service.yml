@@ -38,6 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       security-stage-enable: ${{ steps.security-stage-check.outputs.security-stage-enable }}
+      service: ${{ steps.extract.outputs.service }}
       functionality_test_scope: ${{ steps.extract.outputs.functionality_test_scope }}
       has_open_pr_to_qa: ${{ steps.check_pr.outputs.has_open_pr_to_qa }}
     steps:
@@ -71,21 +72,35 @@ jobs:
 
           # Default if nothing matched
           MATCHED_VALUE="**"
-
+          SERVICE="ALL"
+          
           # Check for feat(...)
           if [[ "$COMMIT_MSG" =~ feat\(([^)]+)\) ]]; then
-            MATCHED_VALUE="${BASH_REMATCH[1]}"
+            SERVICE="${BASH_REMATCH[1]}"
+            MATCHED_VALUE="${BASH_REMATCH[2]}"
           # Check for test(...)
           elif [[ "$COMMIT_MSG" =~ test\(([^)]+)\) ]]; then
-            MATCHED_VALUE="${BASH_REMATCH[1]}"
+            SERVICE="${BASH_REMATCH[1]}"
+            MATCHED_VALUE="${BASH_REMATCH[2]}"
           # Check for refactor(...)
           elif [[ "$COMMIT_MSG" =~ refactor\(([^)]+)\) ]]; then
-            MATCHED_VALUE="${BASH_REMATCH[1]}"
+            SERVICE="${BASH_REMATCH[1]}"
+            MATCHED_VALUE="${BASH_REMATCH[2]}"
           # Check for perf(...)
           elif [[ "$COMMIT_MSG" =~ perf\(([^)]+)\) ]]; then
-            MATCHED_VALUE="${BASH_REMATCH[1]}"
+            SERVICE="${BASH_REMATCH[1]}"
+            MATCHED_VALUE="${BASH_REMATCH[2]}"
           fi
 
+          # Default values if nothing matched
+          if [ -z "$SERVICE" ]; then
+            SERVICE="ALL"
+          fi
+          if [ -z "$PATH" ]; then
+            MATCHED_VALUE="**"
+          fi
+
+          echo "service=$SERVICE" >> $GITHUB_OUTPUT
           echo "functionality_test_scope=$MATCHED_VALUE" >> $GITHUB_OUTPUT
 
       # [QA Workflow Toolbox]-[AC.4]: Branch Parameterization for Manual Runs
