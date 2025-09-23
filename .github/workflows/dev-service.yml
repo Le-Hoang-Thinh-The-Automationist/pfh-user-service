@@ -69,7 +69,7 @@ jobs:
         run: |
           #!/bin/bash
 
-          if[ -z "${{ github.event.inputs.functionality || '' }}"]; then
+          if [ -z "${{ github.event.inputs.functionality || '' }}"]; then
             COMMIT_MSG="test(${{ github.event.inputs.functionality }}): Manual triggered for CI feedback"
           else
             COMMIT_MSG="${{ github.event.head_commit.message }}"
@@ -109,7 +109,6 @@ jobs:
           echo "service=$SERVICE" >> $GITHUB_OUTPUT
           echo "functionality_test_scope=$FUNCTIONALITY" >> $GITHUB_OUTPUT
 
-      # [QA Workflow Toolbox]-[AC.4]: Branch Parameterization for Manual Runs
       - name: Check if branch has open PR to QA
         id: check_pr
         env:
