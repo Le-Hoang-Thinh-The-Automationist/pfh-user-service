@@ -11,8 +11,8 @@ on:
         default: HEAD
         type: string
       # Choose the service to run fast-feedback CI
-      service-name:
-        description: Name of the service to run fast-feedback CI
+      functionality:
+        description: Functionality of the service to run fast-feedback CI
         required: true
         type: string
       # ============ ADDITIONAL STAGE ============
@@ -68,7 +68,12 @@ jobs:
         id: extract
         run: |
           #!/bin/bash
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
+
+          if[ -z "${{ github.event.inputs.functionality || '' }}"]; then
+            COMMIT_MSG="test(${{ github.event.inputs.functionality }}): Manual triggered for CI feedback"
+          else
+            COMMIT_MSG="${{ github.event.head_commit.message }}"
+          fi 
           echo "Commit message: $COMMIT_MSG"
 
           # Default if nothing matched
