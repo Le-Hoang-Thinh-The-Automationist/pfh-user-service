@@ -70,9 +70,9 @@ jobs:
           #!/bin/bash
 
           if [ -z "${{ github.event.inputs.functionality || '' }}"]; then
-            COMMIT_MSG="test(${{ github.event.inputs.functionality }}): Manual triggered for CI feedback"
-          else
             COMMIT_MSG="${{ github.event.head_commit.message }}"
+          else
+            COMMIT_MSG="test(${{ github.event.inputs.functionality }}): Manual triggered for CI feedback"
           fi 
           echo "Commit message: $COMMIT_MSG"
 
