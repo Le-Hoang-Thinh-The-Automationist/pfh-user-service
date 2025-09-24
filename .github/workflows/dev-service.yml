@@ -10,7 +10,7 @@ on:
         required: false
         default: HEAD
         type: string
-      # Choose the service to run fast-feedback CI
+      # Choose the functionality to run fast-feedback CI
       functionality:
         description: Functionality of the service to run fast-feedback CI
         required: true
@@ -69,7 +69,7 @@ jobs:
         run: |
           #!/bin/bash
 
-          if [ -z "${{ github.event.inputs.functionality || '' }}"]; then
+          if [ -z "${{ github.event.inputs.functionality || '' }}" ]; then
             COMMIT_MSG="${{ github.event.head_commit.message }}"
           else
             COMMIT_MSG="test(${{ github.event.inputs.functionality }}): Manual triggered for CI feedback"
@@ -128,7 +128,7 @@ jobs:
     name: Fast-feedback at Commit Stage
     if: ${{ needs.set-configuration.outputs.has_open_pr_to_qa == 'false' }}
     # Only run this job if it's a PR event or if the specified branch has an open PR to QA when triggered manually
-    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/DEV_commit-fast-feedback.yml@feature/16-infrastructure-pipeline-new-qa-mechanism
+    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/DEV_commit-fast-feedback.yml@main
     with:
       # Mandatory inputs
       service-name: ${{ needs.set-configuration.outputs.service }}
