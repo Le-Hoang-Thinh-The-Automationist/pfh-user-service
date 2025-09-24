@@ -16,7 +16,7 @@ on:
       - 'qa'
       - 'qa/**'
 
-run-name: "[QA]: ${{ github.event_name }} at ${{ github.ref_name }} (${{ github.sha }})"
+run-name: "[QA]_[${{ github.event_name }}]: ${{ github.event.head_commit.message || github.event.pull_request.title  }}. at ${{ github.ref_name }} (${{ github.sha }})"
 
 jobs:
   set-configuration:
