@@ -117,7 +117,7 @@ jobs:
     needs: set-configuration
     # Only run this job if it's a PR event or if the specified branch has an open PR to QA when triggered manually
     if: ${{ github.event_name== 'pull_request' || (github.event_name== 'workflow_dispatch' && needs.set-configuration.outputs.has_open_pr_to_qa == 'true') }} 
-    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/QA_pull-request-quality-gate.yml@feature/6-pipeline-refactor-bash-script-for-cicd-utilization
+    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/QA_pull-request-quality-gate.yml@main
     with:
       # Mandatory inputs
       environment: ${{ needs.set-configuration.outputs.environment }}

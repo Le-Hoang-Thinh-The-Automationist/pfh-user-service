@@ -128,7 +128,7 @@ jobs:
     name: Fast-feedback at Commit Stage
     if: ${{ needs.set-configuration.outputs.has_open_pr_to_qa == 'false' }}
     # Only run this job if it's a PR event or if the specified branch has an open PR to QA when triggered manually
-    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/DEV_commit-fast-feedback.yml@feature/6-pipeline-refactor-bash-script-for-cicd-utilization
+    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/DEV_commit-fast-feedback.yml@main
     with:
       # Mandatory inputs
       service-name: ${{ needs.set-configuration.outputs.service }}
