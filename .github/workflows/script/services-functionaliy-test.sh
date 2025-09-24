@@ -49,7 +49,6 @@ while [[ $# -gt 0 ]]; do
       TEST_SERVICE="$2"
       shift 2
       ;;
-      ;;
     -f|--functionality)
       if [[ -z "${2-}" || "${2:0:1}" == "-" ]]; then
         echo "Error: '$1' requires a non-empty argument."
