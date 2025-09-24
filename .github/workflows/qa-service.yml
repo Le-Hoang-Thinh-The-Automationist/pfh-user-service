@@ -16,7 +16,7 @@ on:
       - 'qa'
       - 'qa/**'
 
-run-name: "[QA]: ${{ github.event_name }} at ${{ github.ref_name }} (${{ github.sha }})"
+run-name: "[QA]_[${{ github.event_name }}]: ${{ github.event.head_commit.message || github.event.pull_request.title  }}. at ${{ github.ref_name }} (${{ github.sha }})"
 
 jobs:
   set-configuration:
@@ -69,7 +69,7 @@ jobs:
     needs: set-configuration
     # Only run this job if it's a PR event or if the specified branch has an open PR to QA when triggered manually
     if: ${{ github.event_name== 'pull_request' || (github.event_name== 'workflow_dispatch' && needs.set-configuration.outputs.has_open_pr_to_qa == 'true') }} 
-    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/QA_pull-request-quality-gate.yml@feature/16-infrastructure-pipeline-new-qa-mechanism
+    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/QA_pull-request-quality-gate.yml@main
     with:
       # Mandatory inputs
       environment: ${{ needs.set-configuration.outputs.environment }}
@@ -85,7 +85,7 @@ jobs:
     name: Quality Monitoring CI workflow
     needs: set-configuration
     if: ${{(github.event_name == 'push')  || (github.event_name == 'workflow_dispatch' && github.ref_name == 'qa' && startsWith(github.ref_name, 'qa/')) }} 
-    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/QA_merged-commit-quality-gate.yml@feature/16-infrastructure-pipeline-new-qa-mechanism
+    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/QA_merged-commit-quality-gate.yml@main
     with:
       # Mandatory inputs
       environment: ${{ needs.set-configuration.outputs.environment }}
