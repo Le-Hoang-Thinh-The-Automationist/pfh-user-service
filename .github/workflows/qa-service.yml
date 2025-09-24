@@ -80,3 +80,19 @@ jobs:
       custom-build-script: services-functionaliy-test.sh -t int
     secrets:
       deploy_token: ${{ secrets.DEPLOY_TOKEN }}
+
+  call-merged-commit-ci-workflow:
+    name: Quality Monitoring CI workflow
+    needs: set-configuration
+    if: ${{(github.event_name == 'push')  || (github.event_name == 'workflow_dispatch' && github.ref_name == 'qa' && startsWith(github.ref_name, 'qa/')) }} 
+    uses: Le-Hoang-Thinh-The-Automationist/pfh-pipeline/.github/workflows/QA_merged-commit-quality-gate.yml@feature/16-infrastructure-pipeline-new-qa-mechanism
+    with:
+      # Mandatory inputs
+      environment: ${{ needs.set-configuration.outputs.environment }}
+      service-name: pfh-user-service
+
+      # Custom
+      custom-test-script: ./services-functionaliy-test.sh -t unit
+      custom-build-script: services-functionaliy-test.sh -t int
+    secrets:
+      deploy_token: ${{ secrets.DEPLOY_TOKEN }}
