@@ -105,9 +105,9 @@ jobs:
 
       # Custom
       custom-test-script:   
-        ./.github/workflows/script/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t unit
+        ./.github/workflows/scripts/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t unit
       custom-build-script:  
-        ./.github/workflows/script/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t int -f '${{ needs.set-configuration.outputs.functionality_test_scope }}'
+        ./.github/workflows/scripts/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t int -f '${{ needs.set-configuration.outputs.functionality_test_scope }}'
 
       # Security and compliance check stage
       # Use fromJSON to convert string "true"/"false" to boolean true/false

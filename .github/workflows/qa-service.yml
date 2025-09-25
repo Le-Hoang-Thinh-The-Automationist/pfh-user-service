@@ -125,9 +125,9 @@ jobs:
 
       # Custom
       custom-test-script:   
-        ./.github/workflows/script/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t unit
+        ./.github/workflows/scripts/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t unit
       custom-build-script:  
-        ./.github/workflows/script/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t int
+        ./.github/workflows/scripts/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t int
     secrets:
       deploy_token: ${{ secrets.DEPLOY_TOKEN }}
 
@@ -143,8 +143,8 @@ jobs:
 
       # Custom
       custom-test-script:   
-        ./.github/workflows/script/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t unit
+        ./.github/workflows/scripts/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t unit
       custom-build-script:  
-        ./.github/workflows/script/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t int
+        ./.github/workflows/scripts/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t int
     secrets:
       deploy_token: ${{ secrets.DEPLOY_TOKEN }}
