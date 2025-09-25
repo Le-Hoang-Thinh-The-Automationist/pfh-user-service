@@ -64,50 +64,12 @@ jobs:
       #   - test(<functionality>)
       #   - refactor(<functionality>)
       #   - perf(<functionality>)
-      - name: Extract functionality test scope based on git commit message
+      - name: Detect Service & Functionality
         id: extract
         run: |
-          #!/bin/bash
-
-          if [ -z "${{ github.event.inputs.functionality || '' }}" ]; then
-            COMMIT_MSG="${{ github.event.head_commit.message }}"
-          else
-            COMMIT_MSG="test(${{ github.event.inputs.functionality }}): Manual triggered for CI feedback"
-          fi 
-          echo "Commit message: $COMMIT_MSG"
-
-          # Default if nothing matched
-          FUNCTIONALITY="**"
-          SERVICE="ALL"
-          
-          # Check for feat(<service>/<FUNCTIONALITY>) or feat(<service>)
-          if [[ "$COMMIT_MSG" =~ feat\(([a-zA-Z0-9_-]+)(/([a-zA-Z0-9_/-]+))?\) ]]; then
-            SERVICE="${BASH_REMATCH[1]}"
-            FUNCTIONALITY="${BASH_REMATCH[3]}"
-          # Check for test(<service>/<FUNCTIONALITY>) or test(<service>)
-          elif [[ "$COMMIT_MSG" =~ test\(([a-zA-Z0-9_-]+)(/([a-zA-Z0-9_/-]+))?\) ]]; then
-            SERVICE="${BASH_REMATCH[1]}"
-            FUNCTIONALITY="${BASH_REMATCH[3]}"
-          # Check for refactor(<service>/<FUNCTIONALITY>) or refactor(<service>)
-          elif [[ "$COMMIT_MSG" =~ refactor\(([a-zA-Z0-9_-]+)(/([a-zA-Z0-9_/-]+))?\) ]]; then
-            SERVICE="${BASH_REMATCH[1]}"
-            FUNCTIONALITY="${BASH_REMATCH[3]}"
-          # Check for perf(<service>/<FUNCTIONALITY>) or perf(<service>)
-          elif [[ "$COMMIT_MSG" =~ perf\(([a-zA-Z0-9_-]+)(/([a-zA-Z0-9_/-]+))?\) ]]; then
-            SERVICE="${BASH_REMATCH[1]}"
-            FUNCTIONALITY="${BASH_REMATCH[3]}"
-          fi
-
-          # Default values if nothing matched
-          if [ -z "$SERVICE" ]; then
-            SERVICE="ALL"
-          fi
-          if [ -z "$FUNCTIONALITY" ]; then
-            FUNCTIONALITY="**"
-          fi
-
-          echo "service=$SERVICE" >> $GITHUB_OUTPUT
-          echo "functionality_test_scope=$FUNCTIONALITY" >> $GITHUB_OUTPUT
+          .github/workflows/scripts/detect-service.sh \
+            "${{ github.event.inputs.functionality || '' }}" \
+            "${{ github.event.head_commit.message }}"
 
       - name: Check if branch has open PR to QA
         id: check_pr
