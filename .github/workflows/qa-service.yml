@@ -63,40 +63,20 @@ jobs:
       #   - test(<functionality>)
       #   - refactor(<functionality>)
       #   - perf(<functionality>)
-      - name: Extract functionality test scope based on git commit message
+      - name: Detect Service
         id: extract
         run: |
           #!/bin/bash
+          read SERVICE FUNCTIONALITY < <(
+            bash ./.github/workflows/scripts/detect-service.sh \
+              "${{ github.event.inputs.service || '' }}" \
+              "${{ github.event.head_commit.message || github.event.pull_request.title }}"
+          )
 
-          if [ -z "${{ github.event.inputs.service || '' }}" ]; then
-            COMMIT_MSG="${{ github.event.head_commit.message || github.event.pull_request.title }}"
-          else
-            COMMIT_MSG="test(${{ github.event.inputs.service }}): Manual triggered for CI feedback"
-          fi 
-          echo "Commit message: $COMMIT_MSG"
+          echo "Commit message parsed → service=$SERVICE"
 
-          # Default if nothing matched
-          SERVICE="ALL"
-          
-          # Check for feat(<service>/<FUNCTIONALITY>) or feat(<service>)
-          if [[ "$COMMIT_MSG" =~ feat\(([a-zA-Z0-9_-]+)(/([a-zA-Z0-9_/-]+))?\) ]]; then
-            SERVICE="${BASH_REMATCH[1]}"
-          # Check for test(<service>/<FUNCTIONALITY>) or test(<service>)
-          elif [[ "$COMMIT_MSG" =~ test\(([a-zA-Z0-9_-]+)(/([a-zA-Z0-9_/-]+))?\) ]]; then
-            SERVICE="${BASH_REMATCH[1]}"
-          # Check for refactor(<service>/<FUNCTIONALITY>) or refactor(<service>)
-          elif [[ "$COMMIT_MSG" =~ refactor\(([a-zA-Z0-9_-]+)(/([a-zA-Z0-9_/-]+))?\) ]]; then
-            SERVICE="${BASH_REMATCH[1]}"
-          # Check for perf(<service>/<FUNCTIONALITY>) or perf(<service>)
-          elif [[ "$COMMIT_MSG" =~ perf\(([a-zA-Z0-9_-]+)(/([a-zA-Z0-9_/-]+))?\) ]]; then
-            SERVICE="${BASH_REMATCH[1]}"
-          fi
+          echo "service=$SERVICE" >> "$GITHUB_OUTPUT"
 
-          # Default values if nothing matched
-          if [ -z "$SERVICE" ]; then
-            SERVICE="ALL"
-          fi
-          echo "service=$SERVICE" >> $GITHUB_OUTPUT
 
   # This job will fail if the branch does not have an open PR to QA when triggered manually
   manual-trigger-branch-doest-not-have-pr-to-qa:
