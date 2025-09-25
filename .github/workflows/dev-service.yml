@@ -67,9 +67,17 @@ jobs:
       - name: Detect Service & Functionality
         id: extract
         run: |
-          .github/workflows/scripts/detect-service.sh \
-            "${{ github.event.inputs.functionality || '' }}" \
-            "${{ github.event.head_commit.message }}"
+          #!/bin/bash
+          read SERVICE FUNCTIONALITY < <(
+            ./.github/scripts/detect-service.sh \
+              "${{ github.event.inputs.functionality || '' }}" \
+              "${{ github.event.head_commit.message }}"
+          )
+
+          echo "Commit message parsed → service=$SERVICE, functionality=$FUNCTIONALITY"
+
+          echo "service=$SERVICE" >> "$GITHUB_OUTPUT"
+          echo "functionality_test_scope=$FUNCTIONALITY" >> "$GITHUB_OUTPUT"
 
       - name: Check if branch has open PR to QA
         id: check_pr
