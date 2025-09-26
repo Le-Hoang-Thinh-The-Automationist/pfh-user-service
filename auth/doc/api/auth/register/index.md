@@ -41,22 +41,20 @@ Register a new user account and return user details with access token.
 
 #### Body Parameters
 
-| Field            | Type   | Required | Example                                           | Notes                 |
-| ---------------- | ------ | -------- | ------------------------------------------------- | --------------------- |
-| name             | string | Yes      | John Doe                                          | Full name of the user |
-| email            | string | Yes      | [newuser@example.com](mailto:newuser@example.com) | Must be unique        |
-| password         | string | Yes      | StrongPassword123                                 | Minimum 8 characters  |
-| confirm_password | string | Yes      | StrongPassword123                                 | Must match `password` |
+| Field            | Type   | Required | Example                                           | Notes                          |
+| ---------------- | ------ | -------- | ------------------------------------------------- | ----------------------------   |
+| email            | string | Yes      | [newuser@example.com](mailto:newuser@example.com) | Must be unique                 |
+| password         | string | Yes      | StrongPassword123!                                | Minimum 12 characters, must contain at least one uppercase, lowercase, digit, and special character |
+| confirmPassword  | string | Yes      | StrongPassword123!                                | Must match `password`          |
 
 **Example Request**
 
 ```json
 POST /auth/register
 {
-  "name": "John Doe",
   "email": "newuser@example.com",
-  "password": "StrongPassword123",
-  "confirm_password": "StrongPassword123"
+  "password": "StrongPassword123!",
+  "confirmPassword": "StrongPassword123!"
 }
 ```
 
@@ -67,12 +65,8 @@ POST /auth/register
 ```json
 {
   "message": "User registered successfully",
-  "user": {
-    "id": 124,
-    "email": "newuser@example.com",
-    "name": "John Doe"
-  },
-  "token": "eyJhbGciOiJIUzI1NiIsInR..."
+  "id": 124,
+  "email": "newuser@example.com"
 }
 ```
 
@@ -82,9 +76,53 @@ POST /auth/register
 
 ```json
 {
-  "error": "Email already exists"
+  "status": 400,
+  "message": "<Overview error message, need to check 'errors' for each field's error detail>",
+  "timestamp": "2025-09-26T09:25:43Z",
+  "errors": [
+    // When the json's format request is invalid
+    {
+      "field": "syntax",
+      "message": "Malformed JSON"
+    },
+    // When email has invalid format
+    {
+      "field": "email",
+      "message": "Invalid email format"
+    },
+    // When password does not follow the format
+    {
+      "field": "password",
+      "message": "Password is too weak"
+    },
+    // When the confirm error does not match the password
+    {
+      "field": "confirmPassword",
+      "message": "Passwords do not match"
+    },
+    ...
+  ]
 }
 ```
+
+* **401 Unauthorized**
+
+```json
+{
+  "status": 401,
+  "message": "Invalid credentials",
+  "timestamp": "2025-09-26T09:50:12Z",
+  "errors": [
+    {
+      "field": "credential",
+      "message": "Invalid credentials"
+    }
+  ]
+}
+
+```
+
+---
 
 * **422 Validation Error**
 
