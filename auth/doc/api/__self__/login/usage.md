@@ -94,11 +94,25 @@ POST /auth/login
 
 ---
 
-* **400 Bad Request**
+* **403 Forbidden**
 
 ```json
 {
-  "error": "Missing required fields"
+  "status": 403,
+  "message": "<Overview error message, need to check 'errors' for each field's error detail>",
+  "timestamp": "2025-09-26T11:24:55Z",
+  "errors": [
+    // Case 1: When the user's status acount is disabled
+    {
+      "field": "userStatus",
+      "message": "Your account is disabled. Please contact support."
+    },
+    // Case 2: When the user's status acount is suspended
+    {
+      "field": "userStatus",
+      "message": "Your account is suspended. Please contact support."
+    },
+  ]
 }
 ```
 
