@@ -51,8 +51,8 @@ Authenticate a user with email and password. Returns an access token and user de
 ```json
 POST /auth/login
 {
-  "email": "user@example.com",
-  "password": "StrongPassword123"
+  "email": "john.doe@example.com",
+  "password": "StrongPassword123!"
 }
 ```
 
@@ -63,11 +63,13 @@ POST /auth/login
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR...",
-  "expires_in": 3600,
-  "user": {
-    "id": 123,
-    "email": "user@example.com",
-    "name": "John Doe"
+  "message": "Login successful",
+  "claims": {
+    "roles": [
+      "NORMAL_USER",
+      ...
+    ],
+    "email": "john.doe@example.com"
   }
 }
 ```
@@ -78,9 +80,19 @@ POST /auth/login
 
 ```json
 {
-  "error": "Invalid email or password"
+  "status": 401,
+  "message": "Invalid credentials",
+  "timestamp": "2025-09-26T09:50:12Z",
+  "errors": [
+    {
+      "field": "credential",
+      "message": "Invalid credentials"
+    }
+  ]
 }
 ```
+
+---
 
 * **400 Bad Request**
 
