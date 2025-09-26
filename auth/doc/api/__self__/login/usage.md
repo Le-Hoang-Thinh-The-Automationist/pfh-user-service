@@ -116,6 +116,24 @@ POST /auth/login
 }
 ```
 
+---
+
+* **423 Locked**
+
+```json
+{
+  "status": 423,
+  "message": "<Overview error message, need to check 'errors' for each field's error detail>",
+  "timestamp": "2025-09-26T11:24:55Z",
+  "errors": [
+    {
+      "field": "userStatus",
+      "message": "Your account is locked. Please contact support."
+    }
+  ]
+}
+```
+
 ## Notes & Constraints
 
 * Store token securely (recommended: HttpOnly cookie).
