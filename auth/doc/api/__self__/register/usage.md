@@ -4,7 +4,7 @@
 
 | Version | Release Date | Changes & Updates | Author    |
 | ------- | ------------ | ----------------- | --------- |
-| 0.0.1   | 2025-09-25   | Initial draft     | L.H.Thinh |
+| 0.1.0   | 2025-09-26   | Initial draft     | L.H.Thinh |
 
 ---
 

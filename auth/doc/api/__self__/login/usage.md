@@ -4,7 +4,7 @@
 
 | Version | Release Date | Changes & Updates | Author    |
 | ------- | ------------ | ----------------- | --------- |
-| 0.0.1   | 2025-09-25   | Initial draft     | L.H.Thinh |
+| 0.1.0   | 2025-09-26   | Initial draft     | L.H.Thinh |
 
 ---
 
@@ -41,10 +41,11 @@ Authenticate a user with email and password. Returns an access token and user de
 
 #### Body Parameters
 
-| Field    | Type   | Required | Example                                     | Notes                 |
-| -------- | ------ | -------- | ------------------------------------------- | --------------------- |
-| email    | string | Yes      | [user@example.com](mailto:user@example.com) | Must be a valid email |
-| password | string | Yes      | StrongPassword123                           | Minimum 8 characters  |
+| Field            | Type   | Required | Example                                           | Notes                          |
+| ---------------- | ------ | -------- | ------------------------------------------------- | ----------------------------   |
+| email            | string | Yes      | [newuser@example.com](mailto:newuser@example.com) | Must be unique                 |
+| password         | string | Yes      | StrongPassword123!                                | Minimum 12 characters, must contain at least one uppercase, lowercase, digit, and special character |
+| confirmPassword  | string | Yes      | StrongPassword123!                                | Must match `password`          |
 
 **Example Request**
 
