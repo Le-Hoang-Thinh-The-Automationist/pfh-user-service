@@ -104,23 +104,6 @@ POST /auth/register
   ]
 }
 ```
----
-
-* **401 Unauthorized**
-
-```json
-{
-  "status": 401,
-  "message": "Invalid credentials",
-  "timestamp": "2025-09-26T09:50:12Z",
-  "errors": [
-    {
-      "field": "credential",
-      "message": "Invalid credentials"
-    }
-  ]
-}
-```
 
 ---
 
