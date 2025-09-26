@@ -142,11 +142,13 @@ POST /auth/register
 
 ---
 
-* **422 Validation Error**
+* **415 Unsupported Media Type**
+
+- When: This error happens because you request `Content-Type` that is NOT `application/json`
 
 ```json
 {
-  "error": "Password must be at least 8 characters"
+  "error": "Media is not support"
 }
 ```
 
