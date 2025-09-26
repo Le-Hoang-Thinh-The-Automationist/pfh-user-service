@@ -123,12 +123,30 @@ POST /auth/login
 ```json
 {
   "status": 423,
-  "message": "<Overview error message, need to check 'errors' for each field's error detail>",
+  "message": "Your account is locked. Please contact support.",
   "timestamp": "2025-09-26T11:24:55Z",
   "errors": [
     {
       "field": "userStatus",
       "message": "Your account is locked. Please contact support."
+    }
+  ]
+}
+```
+
+---
+
+* **429 Too many request**
+
+```json
+{
+  "status": 429,
+  "message": "Too many failed login attempts from this IP. Please try slow down.",
+  "timestamp": "2025-09-26T11:24:55Z",
+  "errors": [
+    {
+      "field": "userStatus",
+      "message": "Too many failed login attempts from this IP. Please try slow down."
     }
   ]
 }
