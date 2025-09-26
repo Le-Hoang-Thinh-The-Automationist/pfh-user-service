@@ -119,7 +119,6 @@ POST /auth/register
     }
   ]
 }
-
 ```
 
 ---
