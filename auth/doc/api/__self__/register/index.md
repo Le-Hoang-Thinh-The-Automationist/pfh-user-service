@@ -104,6 +104,7 @@ POST /auth/register
   ]
 }
 ```
+---
 
 * **401 Unauthorized**
 
@@ -116,6 +117,24 @@ POST /auth/register
     {
       "field": "credential",
       "message": "Invalid credentials"
+    }
+  ]
+}
+```
+
+---
+
+* **409 Conflict**
+
+```json
+{
+  "status": 409,
+  "message": "Email already registered: newuser@example.com",
+  "timestamp": "2025-09-26T11:24:55Z",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Email already registered"
     }
   ]
 }
