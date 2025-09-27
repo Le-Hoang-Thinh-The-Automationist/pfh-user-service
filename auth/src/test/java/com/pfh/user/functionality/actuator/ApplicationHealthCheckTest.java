@@ -14,7 +14,7 @@
  *          * **AC.6:** If DB is not connected, it should provide information like { "connectionStatus": "disconnected", "dbHostSource": "<CONNECTED_DATABASE_HOST>" }`.
  *
  */
-package com.pfh.user.functionality.infrastructure;
+package com.pfh.user.functionality.actuator;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

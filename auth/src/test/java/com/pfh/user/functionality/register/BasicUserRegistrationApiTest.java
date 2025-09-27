@@ -15,7 +15,7 @@
  *          * **AC.6:** Email should be case insensitive and be stored in the database in lower case.
  *
  */
-package com.pfh.user.functionality.registration;
+package com.pfh.user.functionality.register;
 
 import com.pfh.user.dto.auth.RegistrationRequestDto;
 import com.pfh.user.dto.auth.RegistrationResponseDto;

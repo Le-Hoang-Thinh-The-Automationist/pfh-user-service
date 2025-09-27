@@ -15,7 +15,7 @@
  *          * **AC.6:** Password must contain at least one uppercase, lowercase, digit, and special character
  *
  */
-package com.pfh.user.functionality.registration;
+package com.pfh.user.functionality.register;
 
 import com.pfh.user.dto.auth.RegistrationRequestDto;
 import com.pfh.user.entity.UserEntity;
