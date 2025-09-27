@@ -18,7 +18,7 @@
  *          * **AC.4:** Error messages are user-friendly and actionable
  *          * **AC.5:** Internal error details are logged separately for debugging
  */
-package com.pfh.user.functionality.registration;
+package com.pfh.user.functionality.register;
 
 import com.pfh.user.service.AuthService;
 import com.pfh.user.dto.auth.RegistrationRequestDto;
