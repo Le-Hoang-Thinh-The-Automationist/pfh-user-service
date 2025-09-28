@@ -1,6 +1,6 @@
-import React from "react";
+import { type FC } from "react";
 
-export default function SignUpLink() {
+export const SignUpLink: FC = () => {
   return (
     <a
       href="/auth/register"

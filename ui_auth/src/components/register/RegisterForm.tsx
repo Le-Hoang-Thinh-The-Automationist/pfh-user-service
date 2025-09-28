@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, type FC } from "react";
 import { registerUser } from "../../services/authService";
 import type { RegisterRequestDto } from "../../dto/RegisterDto";
 
-export default function RegisterForm() {
+export const RegisterForm : FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
