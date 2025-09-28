@@ -1,0 +1,31 @@
+---
+import SignUpLink from "../../components/login/SignUpLink.tsx";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login</title>
+  </head>
+  <body style="font-family: sans-serif; padding: 2rem;">
+    <h1>Login Page</h1>
+    <form method="post" action="/api/login">
+      <label>
+        Email:
+        <input type="email" name="email" required />
+      </label>
+      <br /><br />
+      <label>
+        Password:
+        <input type="password" name="password" required />
+      </label>
+      <br /><br />
+      <button type="submit">Login</button>
+    </form>
+
+    <hr />
+
+    <p>Don't have an account?</p>
+    <SignUpLink client:load />
+  </body>
+</html>
