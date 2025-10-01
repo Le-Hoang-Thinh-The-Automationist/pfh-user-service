@@ -77,13 +77,27 @@ fi
 
 cd "$CURRRENT_PATH/$TEST_SERVICE"
 
+type="BE"
+
+if [[ $TEST_SERVICE == ui_* ]]; then
+  type="FE"
+else
+  type="BE"
+fi
+
 # Run testing
 echo "Execute the test for $TEST_TYPE tests..."
 exit_code=0
+
 case "$TEST_TYPE" in
   unit)
     echo "✅ Begin execute unit tests.."
-    mvn clean test -Dtest=**/component/$TEST_FUNCTIONALITY/*
+    if [[ $type = "BE" ]]; then
+      mvn clean test -Dtest=**/component/$TEST_FUNCTIONALITY/*
+    else
+      npm run test:once -- ./tests/component/$TEST_FUNCTIONALITY/*
+    fi
+
     if [ $? -ne 0 ]; then
       echo "❌ Unit tests failed. Exiting..."
       exit_code=1
@@ -91,7 +105,13 @@ case "$TEST_TYPE" in
     ;;
   int)
     echo "✅ Begin execute integration tests.."
-    mvn clean verify -Dtest=**/functionality/$TEST_FUNCTIONALITY/*
+    if [[ $type = "BE" ]]; then
+      mvn clean verify -Dtest=**/functionality/$TEST_FUNCTIONALITY/*
+    else
+      npm run test:once -- ./tests/functionality/$TEST_FUNCTIONALITY/*
+      npm run build
+    fi
+
     if [ $? -ne 0 ]; then
       echo "❌ Integration tests failed. Exiting..."
       exit_code=1
