@@ -1,6 +1,7 @@
 // src/lib/apiClient.ts
 
-const API_BASE_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:5000";
+import { API_BASE_URL } from "../config/constValues";
+
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 

@@ -1,22 +1,24 @@
 // src/mocks/handlers.ts
-import { http } from "msw";
+import { http, HttpResponse } from "msw";
 import type { RegisterRequestDto, RegisterResponseDto } from "../../../../src/dto/RegisterDto";
+import { API_BASE_URL, API_PATH } from "../../../../src/config/constValues";
+
+const FULL_API_PATH_TEST : string = `${API_BASE_URL}${API_PATH}`
 
 export const handlers = [
-  http.post("/api/register", async ({ request }) => {
-    const body = (await request.json()) as RegisterRequestDto;
+  http.post(`${FULL_API_PATH_TEST}/auth/register`, async ({ request }) => {
+    const body = await request.json();
 
-    if (body.password !== body.confirmPassword) {
-      return new Response(
-        JSON.stringify({ error: "Passwords do not match" }),
-        { status: 400 }
-      );
-    }
+    // Assertions (or checks)
+    expect(body).toEqual({
+      email: "user@example.com",
+      password: "",
+      confirmPassword: "",
+    });
 
-    const response: RegisterResponseDto = {
-      userId: "mock-user-123",
-    };
-
-    return new Response(JSON.stringify(response), { status: 200 });
+    return HttpResponse.json(
+      { message: "User registered successfully" },
+      { status: 201 }
+    );
   }),
 ];
