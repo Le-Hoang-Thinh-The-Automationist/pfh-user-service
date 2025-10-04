@@ -108,8 +108,7 @@ case "$TEST_TYPE" in
     if [[ $type = "BE" ]]; then
       mvn clean verify -Dtest=**/functionality/$TEST_FUNCTIONALITY/*
     else
-      npm run test:once -- ./tests/functionality/$TEST_FUNCTIONALITY/*
-      npm run build
+      npm run test:once -- ./tests/functionality/$TEST_FUNCTIONALITY/* && npm run build
     fi
 
     if [ $? -ne 0 ]; then
