@@ -4,4 +4,4 @@ ci_config:
     mvn:
       enabled: true
       version: "3.9.9"
-      java_version: "17"
+      java_version: "21"
