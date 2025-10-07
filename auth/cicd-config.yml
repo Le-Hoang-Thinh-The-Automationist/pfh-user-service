@@ -5,3 +5,7 @@ ci_config:
       enabled: true
       version: "3.9.9"
       java_version: "21"
+  delivery_management:
+    container:
+      type: docker
+
