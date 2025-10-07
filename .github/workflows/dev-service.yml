@@ -16,19 +16,19 @@ on:
         required: true
         type: string
       # ============ ADDITIONAL STAGE ============
-      security-stage-enable :
-          description: Enable security and compliance check stage (true/false)
-          type: boolean
-          required: false
-          default: false
+      security-stage-enable:
+        description: Enable security and compliance check stage (true/false)
+        type: boolean
+        required: false
+        default: false
   push:
     # Any branch except main, prod, stag, qa will trigger this workflow
     branches-ignore:
-      - 'main'
-      - 'prod'
-      - 'stag'
-      - 'qa'
-      - 'qa/**'
+      - "main"
+      - "prod"
+      - "stag"
+      - "qa"
+      - "qa/**"
 
 run-name: "[DEV]: ${{ github.event.head_commit.message }} at ${{ github.ref_name }} triggered by ${{ github.event_name }}"
 
@@ -55,11 +55,11 @@ jobs:
 
       - name: Install GitHub CLI
         run: sudo apt-get update && sudo apt-get install -y gh
-      
+
       - uses: actions/checkout@v4
 
       # The git commit message following the git commit conventional
-      # In this case only four commit header type will trigger the test: 
+      # In this case only four commit header type will trigger the test:
       #   - feat(<functionality>)
       #   - test(<functionality>)
       #   - refactor(<functionality>)
@@ -90,7 +90,7 @@ jobs:
             echo "has_open_pr_to_qa=true" >> $GITHUB_OUTPUT
           else
             echo "has_open_pr_to_qa=false" >> $GITHUB_OUTPUT
-          fi  
+          fi
 
   # This job will run if it's a PR event or if the specified branch has an open PR to QA when triggered manually
   call-fast-feedback-ci-workflow:
@@ -104,9 +104,9 @@ jobs:
       service-name: ${{ needs.set-configuration.outputs.service }}
 
       # Custom
-      custom-test-script:   
+      custom-test-script: |
         ./.github/workflows/scripts/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t unit
-      custom-build-script:  
+      custom-build-script: |
         ./.github/workflows/scripts/services-functionaliy-test.sh -s ${{ needs.set-configuration.outputs.service }} -t int -f '${{ needs.set-configuration.outputs.functionality_test_scope }}'
 
       # Security and compliance check stage
