@@ -1,8 +1,8 @@
-import { useState, type FC } from "react";
+import { useState } from "react";
 import { registerUser } from "../../services/authService";
 import type { RegisterRequestDto } from "../../dto/RegisterDto";
 
-export const RegisterForm : FC = () => {
+const RegisterForm : React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -41,3 +41,5 @@ export const RegisterForm : FC = () => {
     </form>
   );
 }
+
+export default RegisterForm;

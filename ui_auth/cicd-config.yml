@@ -1,0 +1,6 @@
+version: "1"
+ci_config:
+  package_management:
+    npm:
+      enabled: true
+      node_version: "20.19.0"
