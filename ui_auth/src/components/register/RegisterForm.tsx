@@ -1,12 +1,27 @@
 import { useState } from "react";
 import { registerUser } from "../../services/authService";
 import type { RegisterRequestDto } from "../../dto/RegisterDto";
+import { getInputValue, invalidConfirmPasswordGiveErrorMessage, invalidEmailGiveErrorMessage, invalidPasswordGiveErrorMessage, type InputEvent } from "../../utils/inputUtils";
 
 const RegisterForm : React.FC = () => {
+  // =============================  REACT HOOKS AND OTHER VARIABLES ======================
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+  const isDisabled =
+    !!emailError ||
+    !!passwordError ||
+    !!confirmPasswordError ||
+    !email ||
+    !password ||
+    !confirmPassword; 
+
+  // =============================  REACT EVENT HANDLER ======================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -17,27 +32,56 @@ const RegisterForm : React.FC = () => {
     console.log("Register result:", result);
   };
 
+  const handleEmailChange = (e : InputEvent) => {
+    const value = getInputValue(e);
+    setEmail(value);
+    setEmailError(invalidEmailGiveErrorMessage(value))
+  };
+
+  const handlePasswordChange = (e : InputEvent) => {
+    const value = getInputValue(e);
+    setPassword(value);
+    setPasswordError(invalidPasswordGiveErrorMessage(value))
+  };
+
+  const handleConfirmPasswordChange = (e : InputEvent) => {
+    const value = getInputValue(e);
+    setConfirmPassword(value);
+    setConfirmPasswordError(invalidConfirmPasswordGiveErrorMessage(value, password))
+  };
+
+  // =============================  REACT COMPONENT ======================
   return (
-    <form onSubmit={handleSubmit}>
+    <form >
+      {emailError && <span>{emailError}</span>}
       <input
         type="email"
         placeholder="Email"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        onChange={handleEmailChange}
+        onPaste={handleEmailChange}
       />
+      {passwordError && <span>{passwordError}</span>}
       <input
         type="password"
         placeholder="Password"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={handlePasswordChange}
+        onPaste={handlePasswordChange}
       />
+      {confirmPasswordError && <span>{confirmPasswordError}</span>}
       <input
         type="password"
         placeholder="Confirm password"
         value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
+        onChange={handleConfirmPasswordChange}
+        onPaste={handleConfirmPasswordChange}
       />
-      <button type="submit">Register</button>
+      <button 
+      type="submit"
+      onClick={handleSubmit}
+      disabled={isDisabled}
+      >Register</button>
     </form>
   );
 }
