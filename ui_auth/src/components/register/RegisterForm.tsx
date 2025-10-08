@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { registerUser } from "../../services/authService";
 import type { RegisterRequestDto } from "../../dto/RegisterDto";
 import { getInputValue, invalidConfirmPasswordGiveErrorMessage, invalidEmailGiveErrorMessage, invalidPasswordGiveErrorMessage, type InputEvent } from "../../utils/inputUtils";
@@ -50,6 +50,12 @@ const RegisterForm : React.FC = () => {
     setConfirmPasswordError(invalidConfirmPasswordGiveErrorMessage(value, password))
   };
 
+  // On event change of password, re-check the confirm password
+  useEffect(() => {
+    if (confirmPassword) {
+      setConfirmPasswordError(invalidConfirmPasswordGiveErrorMessage(confirmPassword, password))
+    }
+  }, [password]);  
   // =============================  REACT COMPONENT ======================
   return (
     <form >
