@@ -1,8 +1,11 @@
 import { API_PATH } from "../config/constValues.ts";
-import type { RegisterRequestDto, RegisterResponseDto } from "../dto/RegisterDto.ts";
+import type {
+  RegisterRequestDto,
+  RegisterResponseDto,
+} from "../dto/RegisterDto.ts";
 import { apiClient } from "./apiClient.ts";
 
-export const registerUser = (data : RegisterRequestDto) =>
+export const registerUser = (data: RegisterRequestDto) =>
   apiClient.post<RegisterResponseDto>(`${API_PATH}/auth/register`, data);
 
 export const loginUser = (data: { email: string; password: string }) =>

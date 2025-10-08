@@ -2,7 +2,6 @@
 
 import { API_BASE_URL } from "../config/constValues";
 
-
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
 interface ApiResponse<T> {
@@ -12,16 +11,16 @@ interface ApiResponse<T> {
 }
 
 export const apiClient = {
-  // HTTP METHOD: GET 
+  // HTTP METHOD: GET
   get: <T>(endpoint: string, headers?: HeadersInit) =>
     request<T>(endpoint, "GET", undefined, headers),
-  // HTTP METHOD: POST 
+  // HTTP METHOD: POST
   post: <T>(endpoint: string, body?: unknown, headers?: HeadersInit) =>
     request<T>(endpoint, "POST", body, headers),
-  // HTTP METHOD: PUT 
+  // HTTP METHOD: PUT
   put: <T>(endpoint: string, body?: unknown, headers?: HeadersInit) =>
     request<T>(endpoint, "PUT", body, headers),
-  // HTTP METHOD: DELETE 
+  // HTTP METHOD: DELETE
   delete: <T>(endpoint: string, headers?: HeadersInit) =>
     request<T>(endpoint, "DELETE", undefined, headers),
 };
@@ -40,7 +39,7 @@ async function request<T>(
         ...headers,
       },
       body: body ? JSON.stringify(body) : undefined,
-      credentials: "include", 
+      credentials: "include",
     });
 
     const contentType = response.headers.get("Content-Type");
@@ -63,5 +62,3 @@ async function request<T>(
     };
   }
 }
-
-

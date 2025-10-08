@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import { registerUser } from "../../services/authService";
 import type { RegisterRequestDto } from "../../dto/RegisterDto";
-import { getInputValue, invalidConfirmPasswordGiveErrorMessage, invalidEmailGiveErrorMessage, invalidPasswordGiveErrorMessage, type InputEvent } from "../../utils/inputUtils";
+import {
+  getInputValue,
+  invalidConfirmPasswordGiveErrorMessage,
+  invalidEmailGiveErrorMessage,
+  invalidPasswordGiveErrorMessage,
+  type InputEvent,
+} from "../../utils/inputUtils";
 
-const RegisterForm : React.FC = () => {
+const RegisterForm: React.FC = () => {
   // =============================  REACT HOOKS AND OTHER VARIABLES ======================
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,46 +25,50 @@ const RegisterForm : React.FC = () => {
     !!confirmPasswordError ||
     !email ||
     !password ||
-    !confirmPassword; 
+    !confirmPassword;
 
   // =============================  REACT EVENT HANDLER ======================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const payload: RegisterRequestDto = { email, password, confirmPassword};
+    const payload: RegisterRequestDto = { email, password, confirmPassword };
 
     const result = await registerUser(payload);
 
     console.log("Register result:", result);
   };
 
-  const handleEmailChange = (e : InputEvent) => {
+  const handleEmailChange = (e: InputEvent) => {
     const value = getInputValue(e);
     setEmail(value);
-    setEmailError(invalidEmailGiveErrorMessage(value))
+    setEmailError(invalidEmailGiveErrorMessage(value));
   };
 
-  const handlePasswordChange = (e : InputEvent) => {
+  const handlePasswordChange = (e: InputEvent) => {
     const value = getInputValue(e);
     setPassword(value);
-    setPasswordError(invalidPasswordGiveErrorMessage(value))
+    setPasswordError(invalidPasswordGiveErrorMessage(value));
   };
 
-  const handleConfirmPasswordChange = (e : InputEvent) => {
+  const handleConfirmPasswordChange = (e: InputEvent) => {
     const value = getInputValue(e);
     setConfirmPassword(value);
-    setConfirmPasswordError(invalidConfirmPasswordGiveErrorMessage(value, password))
+    setConfirmPasswordError(
+      invalidConfirmPasswordGiveErrorMessage(value, password)
+    );
   };
 
   // On event change of password, re-check the confirm password
   useEffect(() => {
     if (confirmPassword) {
-      setConfirmPasswordError(invalidConfirmPasswordGiveErrorMessage(confirmPassword, password))
+      setConfirmPasswordError(
+        invalidConfirmPasswordGiveErrorMessage(confirmPassword, password)
+      );
     }
-  }, [password]);  
+  }, [password]);
   // =============================  REACT COMPONENT ======================
   return (
-    <form >
+    <form>
       {emailError && <span>{emailError}</span>}
       <input
         type="email"
@@ -83,13 +93,11 @@ const RegisterForm : React.FC = () => {
         onChange={handleConfirmPasswordChange}
         onPaste={handleConfirmPasswordChange}
       />
-      <button 
-      type="submit"
-      onClick={handleSubmit}
-      disabled={isDisabled}
-      >Register</button>
+      <button type="submit" onClick={handleSubmit} disabled={isDisabled}>
+        Register
+      </button>
     </form>
   );
-}
+};
 
 export default RegisterForm;

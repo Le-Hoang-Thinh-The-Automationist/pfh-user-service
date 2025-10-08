@@ -18,4 +18,4 @@ export const SignUpLink: FC = () => {
       Sign Up
     </a>
   );
-}
+};
