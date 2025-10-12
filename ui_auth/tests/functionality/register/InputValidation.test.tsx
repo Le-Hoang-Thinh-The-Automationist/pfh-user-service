@@ -60,8 +60,20 @@ const INVALID_EMAIL_FORMAT: string[] = [
   "username@example..com", // double dot
 ];
 
-const CORRECT_PASSWORD_FORMAT : string = "StrongPassword123"
-const INVALID_PASSWORD_FORMAT : string =  "short"
+const CORRECT_PASSWORD_FORMAT: string[] = [
+  "StrongPass123!", // meets all requirements
+  "MySecurePwd2025$", // long, uppercase, number, special
+  "ValidPassword#99", // uppercase, number, special
+];
+const INVALID_PASSWORD_FORMAT: string[] = [
+  "Ab1!short", // too short (<12 chars)
+  "no_uppercase123!@#", // missing uppercase
+  "NoNumberPassword!", // missing number
+  "NoSpecialCharacter123", // missing special
+  "1234567890123!", // missing uppercase
+  "NO_LOWERCASE!12", // missing uppercase
+  "OnlyTextPassword", // missing special + number
+];
 
 const MATCH_CONFIRM_PASSWORD    : string = CORRECT_PASSWORD_FORMAT
 const UNMATCH_CONFIRM_PASSWORD  : string = "mismatch"
@@ -100,25 +112,35 @@ describe("Input Validation - AC.1 (Email Format)", () => {
   );
 });
 
-// --- AC.2 Password Length ---
+// --- AC.2 Password Validation ---
 describe("Input Validation - AC.2 (Password Length)", () => {
-  it("AC.2 - VP.1: Accepts password ≥12 chars", () => {
-    setup();
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: CORRECT_PASSWORD_FORMAT },
-    });
-    fireEvent.blur(screen.getByLabelText(/password/i));
-    expect(screen.queryByText(/must be at least 12 characters/i)).not.toBeInTheDocument();
-  });
+  it.each(CORRECT_PASSWORD_FORMAT)(
+    "AC.2 - VP.%#: Accepts valid password '%s' without error",
+    (goodPassword) => {
+      setup();
 
-  it("AC.2 - IP.1: Shows error for password <12 chars", () => {
-    setup();
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: INVALID_PASSWORD_FORMAT },
-    });
-    fireEvent.blur(screen.getByLabelText(/password/i));
-    expect(screen.getByText(/must be at least 12 characters/i)).toBeInTheDocument();
-  });
+      const passwordInput = screen.getByPlaceholderText(/^password$/i);
+
+      fireEvent.change(passwordInput, { target: { value: goodPassword } });
+      fireEvent.blur(passwordInput);
+
+      expect(screen.queryByText(/password must/i)).not.toBeInTheDocument();
+    }
+  );
+
+  it.each(INVALID_PASSWORD_FORMAT)(
+    "AC.2 - IP.%#: Shows error for invalid password '%s'",
+    (badPassword) => {
+      setup();
+
+      const passwordInput = screen.getByPlaceholderText(/^password$/i);
+
+      fireEvent.change(passwordInput, { target: { value: badPassword } });
+      fireEvent.blur(passwordInput);
+
+      expect(screen.getByText(/password must/i)).toBeInTheDocument();
+    }
+  );
 });
 
 // --- AC.3 Confirm Password Match ---

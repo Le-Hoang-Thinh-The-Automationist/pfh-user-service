@@ -55,13 +55,10 @@ export const invalidEmailGiveErrorMessage = (value: string): string => {
 export const invalidPasswordGiveErrorMessage = (value: string): string => {
   let message: string = "";
 
-  if (value.trim() === "") {
-    message = "Password is required";
-  } else if (value.length < MINIMUM_PASSWORD_LENGTH) {
-    message = `Password must be at least ${MINIMUM_PASSWORD_LENGTH} characters`;
+  if (value.length < MINIMUM_PASSWORD_LENGTH) {
+    message = `Password must contain at least ${MINIMUM_PASSWORD_LENGTH} and one uppercase letter, one number, and one special character`;
   } else if (!PASSWORD_FORMAT_REGEX.test(value)) {
-    message =
-      "Password must contain at least one uppercase letter, one number, and one special character";
+    message = `Password must contain at least ${MINIMUM_PASSWORD_LENGTH} and one uppercase letter, one number, and one special character`;
   }
 
   return message;
