@@ -1,4 +1,8 @@
 import React from "react";
+import {
+  MINIMUM_PASSWORD_LENGTH,
+  PASSWORD_FORMAT_REGEX,
+} from "../config/constValues";
 
 export type InputEvent =
   | React.ChangeEvent<HTMLInputElement>
@@ -40,7 +44,7 @@ export const invalidEmailGiveErrorMessage = (value: string): string => {
  *
  * Rules:
  * - Required (not empty)
- * - Minimum 8 characters
+ * - Minimum 12 characters
  * - At least one uppercase letter
  * - At least one number
  * - At least one special character
@@ -53,14 +57,11 @@ export const invalidPasswordGiveErrorMessage = (value: string): string => {
 
   if (value.trim() === "") {
     message = "Password is required";
-  } else if (value.length < 8) {
-    message = "Password must be at least 8 characters";
-  } else if (!/[A-Z]/.test(value)) {
-    message = "Password must contain at least one uppercase letter";
-  } else if (!/[0-9]/.test(value)) {
-    message = "Password must contain at least one number";
-  } else if (!/[!@#$%^&*(),.?\":{}|<>]/.test(value)) {
-    message = "Password must contain at least one special character";
+  } else if (value.length < MINIMUM_PASSWORD_LENGTH) {
+    message = `Password must be at least ${MINIMUM_PASSWORD_LENGTH} characters`;
+  } else if (!PASSWORD_FORMAT_REGEX.test(value)) {
+    message =
+      "Password must contain at least one uppercase letter, one number, and one special character";
   }
 
   return message;
