@@ -68,32 +68,50 @@ const RegisterForm: React.FC = () => {
   }, [password]);
   // =============================  REACT COMPONENT ======================
   return (
-    <form>
-      {emailError && <span>{emailError}</span>}
+    <form className="auth-register__register-form">
+      {emailError && (
+        <span className="auth-register__input-error-display">{emailError}</span>
+      )}
       <input
+        className="auth-register__form-input"
         type="email"
         placeholder="Email"
         value={email}
         onChange={handleEmailChange}
         onPaste={handleEmailChange}
       />
-      {passwordError && <span>{passwordError}</span>}
+      {passwordError && (
+        <span className="auth-register__input-error-display">
+          {passwordError}
+        </span>
+      )}
       <input
+        className="auth-register__form-input"
         type="password"
         placeholder="Password"
         value={password}
         onChange={handlePasswordChange}
         onPaste={handlePasswordChange}
       />
-      {confirmPasswordError && <span>{confirmPasswordError}</span>}
+      {confirmPasswordError && (
+        <span className="auth-register__input-error-display">
+          {confirmPasswordError}
+        </span>
+      )}
       <input
+        className="auth-register__form-input"
         type="password"
         placeholder="Confirm password"
         value={confirmPassword}
         onChange={handleConfirmPasswordChange}
         onPaste={handleConfirmPasswordChange}
       />
-      <button type="submit" onClick={handleSubmit} disabled={isDisabled}>
+      <button
+        className="auth-register__submit-button"
+        type="submit"
+        onClick={handleSubmit}
+        disabled={isDisabled}
+      >
         Register
       </button>
     </form>
