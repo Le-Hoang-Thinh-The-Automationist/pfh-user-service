@@ -16,8 +16,10 @@
  *          - IP.1: <12 characters → error shown
  *
  *      * AC.3: Confirm Password must match Password field
- *          - VP.1: Confirm password matches → accepted
- *          - IP.1: Confirm password does not match → error shown
+ *          - VP.1: Confirm password matches password → accepted
+ *          - IP.1: Confirm password does not match password → error shown
+ *          - IP.2: Confirm password first matches the password,
+ *                  But then password changes without changing confirm password → error shown
  *
  *      * AC.4: All validation errors are displayed inline and clearly associated with the field
  *          - VP.1: Each error message is next to the correct input
@@ -75,8 +77,8 @@ const INVALID_PASSWORD_FORMAT: string[] = [
   "OnlyTextPassword", // missing special + number
 ];
 
-const MATCH_CONFIRM_PASSWORD    : string = CORRECT_PASSWORD_FORMAT
-const UNMATCH_CONFIRM_PASSWORD  : string = "mismatch"
+const MATCH_CONFIRM_PASSWORD: string = CORRECT_PASSWORD_FORMAT[0];
+const UNMATCH_CONFIRM_PASSWORD: string = "mismatch";
 
 // Test Execution section
 // --- AC.1 Email Validation ---
@@ -113,7 +115,7 @@ describe("Input Validation - AC.1 (Email Format)", () => {
 });
 
 // --- AC.2 Password Validation ---
-describe("Input Validation - AC.2 (Password Length)", () => {
+describe("Input Validation - AC.2 (Password Format)", () => {
   it.each(CORRECT_PASSWORD_FORMAT)(
     "AC.2 - VP.%#: Accepts valid password '%s' without error",
     (goodPassword) => {
@@ -145,27 +147,61 @@ describe("Input Validation - AC.2 (Password Length)", () => {
 
 // --- AC.3 Confirm Password Match ---
 describe("Input Validation - AC.3 (Confirm Password)", () => {
+  let correctPassword: string = CORRECT_PASSWORD_FORMAT[0];
+
   it("AC.3 - VP.1: Accepts matching password and confirm password", () => {
     setup();
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: CORRECT_PASSWORD_FORMAT },
+
+    fireEvent.change(screen.getByPlaceholderText(/^password$/i), {
+      target: { value: correctPassword },
     });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), {
+
+    fireEvent.change(screen.getByPlaceholderText(/confirm password/i), {
       target: { value: MATCH_CONFIRM_PASSWORD },
     });
-    fireEvent.blur(screen.getByLabelText(/confirm password/i));
-    expect(screen.queryByText(/passwords do not match/i)).not.toBeInTheDocument();
+
+    fireEvent.blur(screen.getByPlaceholderText(/confirm password/i));
+
+    expect(
+      screen.queryByText(/passwords do not match/i)
+    ).not.toBeInTheDocument();
   });
 
   it("AC.3 - IP.1: Shows error when confirm password does not match", () => {
     setup();
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: CORRECT_PASSWORD_FORMAT },
+
+    fireEvent.change(screen.getByPlaceholderText(/^password$/i), {
+      target: { value: correctPassword },
     });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), {
+
+    fireEvent.change(screen.getByPlaceholderText(/confirm password/i), {
       target: { value: UNMATCH_CONFIRM_PASSWORD },
     });
-    fireEvent.blur(screen.getByLabelText(/confirm password/i));
+
+    fireEvent.blur(screen.getByPlaceholderText(/confirm password/i));
+
+    expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
+  });
+
+  it("AC.3 - IP.2: First time both password and confirm password match, but then password change", () => {
+    setup();
+
+    fireEvent.change(screen.getByPlaceholderText(/^password$/i), {
+      target: { value: correctPassword },
+    });
+
+    // First time matches
+    fireEvent.change(screen.getByPlaceholderText(/confirm password/i), {
+      target: { value: MATCH_CONFIRM_PASSWORD },
+    });
+
+    // Change the original password
+    fireEvent.change(screen.getByPlaceholderText(/^password$/i), {
+      target: { value: `${correctPassword}a` },
+    });
+
+    fireEvent.blur(screen.getByPlaceholderText(/confirm password/i));
+
     expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
   });
 });
@@ -184,7 +220,9 @@ describe("Input Validation - AC.4 (Inline Errors)", () => {
     const emailInput = screen.getByLabelText(/email/i);
 
     // Expect error to be associated with the email input
-    expect(emailInput).toHaveAccessibleDescription(emailError.textContent ?? "");
+    expect(emailInput).toHaveAccessibleDescription(
+      emailError.textContent ?? ""
+    );
   });
 });
 

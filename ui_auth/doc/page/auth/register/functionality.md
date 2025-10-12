@@ -28,8 +28,8 @@
 ✅ **Acceptance Criteria:**
 
 - [x] **AC.1:** Email input enforces proper email format and displays inline error messages
-- [ ] **AC.2:** Password input enforces minimum 12 characters, one uppercase letter, one number, and one special character and shows validation feedback
-- [ ] **AC.3:** Confirm Password must match Password field
+- [x] **AC.2:** Password input enforces minimum 12 characters, one uppercase letter, one number, and one special character and shows validation feedback
+- [x] **AC.3:** Confirm Password must match Password field
 - [ ] **AC.4:** All validation errors are displayed inline and clearly associated with the field
 - [ ] **AC.5:** The “Register” button is disabled if validation fails
 
