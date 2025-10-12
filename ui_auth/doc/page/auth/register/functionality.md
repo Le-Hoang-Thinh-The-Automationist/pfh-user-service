@@ -10,8 +10,8 @@
 
 ✅ **Acceptance Criteria:**
 
-- [ ] **AC.1:** A “Sign Up” link or button is visible on the login page
-- [ ] **AC.2:** Clicking the link redirects the user to `auth/register`
+- [x] **AC.1:** A “Sign Up” link or button is visible on the login page
+- [x] **AC.2:** Clicking the link redirects the user to `auth/register`
 - [ ] **AC.3:** The registration page displays a form with required fields (`Email`, `Password`, `Confirm Password`)
 - [ ] **AC.4:** The registration page follows consistent UI design with the rest of the application
 
@@ -31,7 +31,7 @@
 - [x] **AC.2:** Password input enforces minimum 12 characters, one uppercase letter, one number, and one special character and shows validation feedback
 - [x] **AC.3:** Confirm Password must match Password field
 - [x] **AC.4:** All validation errors are displayed inline and clearly associated with the field
-- [ ] **AC.5:** The “Register” button is disabled if validation fails
+- [x] **AC.5:** The “Register” button is disabled if validation fails
 
 ---
 
