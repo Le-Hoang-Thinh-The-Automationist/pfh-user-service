@@ -8,25 +8,37 @@
  *  ✅ Acceptance Criteria with Equivalence Partitions:
  *
  *      * AC.1: Email input enforces proper email format and displays inline error messages
- *          - VP.1: Valid email format → accepted, no error
- *          - IP.1: Invalid email format → inline error shown
+ *          - Valid Partitions (VP):
+ *            - VP.1: Valid email format → accepted, no error
+ *          - Invalid Partitions (IP):
+ *            - IP.1: Invalid email format → inline error shown
  *
- *      * AC.2: Password input enforces minimum 12 characters and shows validation feedback
- *          - VP.1: ≥12 characters → accepted
- *          - IP.1: <12 characters → error shown
+ *      * AC.2: Password input enforces minimum 12 characters, one uppercase letter, one number,
+ *              and one special character and shows validation feedback
+ *          - Valid Partitions (VP):
+ *            - VP.1: Valid format → accepted
+ *          - Invalid Partitions (IP):
+ *            - IP.1: Invalid format → error shown
  *
  *      * AC.3: Confirm Password must match Password field
- *          - VP.1: Confirm password matches password → accepted
- *          - IP.1: Confirm password does not match password → error shown
- *          - IP.2: Confirm password first matches the password,
+ *          - Valid Partitions (VP):
+ *            - VP.1: Confirm password matches password → accepted
+ *          - Invalid Partitions (IP):
+ *            - IP.1: Confirm password does not match password → error shown
+ *            - IP.2: Confirm password first matches the password,
  *                  But then password changes without changing confirm password → error shown
  *
  *      * AC.4: All validation errors are displayed inline and clearly associated with the field
- *          - VP.1: Each error message is next to the correct input
+ *          - Valid Partitions (VP):
+ *            - VP.1: Each error message is next to the correct input
  *
  *      * AC.5: The “Register” button is disabled if validation fails
- *          - VP.1: Valid inputs enable button
- *          - IP.1: Invalid inputs keep button disabled
+ *          - Valid Partitions (VP):
+ *            - VP.1: Valid inputs enable button
+ *          - Invalid Partitions (IP):
+ *            - IP.1: Given the other inputs are correct, invalid email will disable register button
+ *            - IP.2: Given the other inputs are correct, invalid password will disable register button
+ *            - IP.3: Given the other inputs are correct, mismatching `confirm password` will disable register button
  */
 
 import React from "react";
