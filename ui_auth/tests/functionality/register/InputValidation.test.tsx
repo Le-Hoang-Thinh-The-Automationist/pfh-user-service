@@ -33,14 +33,32 @@ import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
 
-import RegisterForm  from "../../../src/components/register/RegisterForm";
-
+import RegisterForm from "../../../src/components/register/RegisterForm";
 
 const setup = () => render(<RegisterForm />);
 
 // Test Data Input
-const CORRECT_EMAIL_FORMAT : string = "user@example.com" 
-const INVALID_EMAIL_FORMAT : string = "invalid-email" 
+const CORRECT_EMAIL_FORMAT: string[] = [
+  "email@example.com",
+  "firstname.lastname@example.com",
+  "email@subdomain.example.com",
+  "firstname+lastname@example.com",
+  "1234567890@example.com",
+  "email@example-one.com",
+  "_______@example.com",
+  "email@example.name",
+  "email@example.co.jp",
+  "firstname-lastname@example.com",
+];
+const INVALID_EMAIL_FORMAT: string[] = [
+  "plainaddress", // no @
+  "@missingusername.com", // missing local part
+  "username@", // missing domain
+  "username@.com", // domain starts with dot
+  "username@com", // no TLD
+  "user name@example.com", // space not allowed
+  "username@example..com", // double dot
+];
 
 const CORRECT_PASSWORD_FORMAT : string = "StrongPassword123"
 const INVALID_PASSWORD_FORMAT : string =  "short"
@@ -51,25 +69,35 @@ const UNMATCH_CONFIRM_PASSWORD  : string = "mismatch"
 // Test Execution section
 // --- AC.1 Email Validation ---
 describe("Input Validation - AC.1 (Email Format)", () => {
-  it("AC.1 - VP.1: Accepts valid email without error", () => {
-    setup();
+  it.each(CORRECT_EMAIL_FORMAT)(
+    "AC.1 - VP.%#: Accepts valid email '%s' without error",
+    (goodEmail) => {
+      setup();
 
-    fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value: CORRECT_EMAIL_FORMAT},
-    });
-    fireEvent.blur(screen.getByLabelText(/email/i));
-    
-    expect(screen.queryByText(/invalid email/i)).not.toBeInTheDocument();
-  });
+      const emailInput = screen.getByPlaceholderText(/email/i);
 
-  it("AC.1 - IP.1: Shows error on invalid email", () => {
-    setup();
-    fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value:  INVALID_EMAIL_FORMAT},
-    });
-    fireEvent.blur(screen.getByLabelText(/email/i));
-    expect(screen.getByText(/invalid email/i)).toBeInTheDocument();
-  });
+      fireEvent.change(emailInput, {
+        target: { value: goodEmail },
+      });
+      fireEvent.blur(emailInput);
+
+      expect(screen.queryByText(/invalid email/i)).not.toBeInTheDocument();
+    }
+  );
+
+  it.each(INVALID_EMAIL_FORMAT)(
+    "AC.1 - IP.2.%#: Shows error for invalid email '%s'",
+    (badEmail) => {
+      setup();
+
+      const emailInput = screen.getByPlaceholderText(/email/i);
+
+      fireEvent.change(emailInput, { target: { value: badEmail } });
+      fireEvent.blur(emailInput);
+
+      expect(screen.getByText(/invalid email/i)).toBeInTheDocument();
+    }
+  );
 });
 
 // --- AC.2 Password Length ---

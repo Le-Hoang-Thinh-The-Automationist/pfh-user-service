@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  EMAIL_FORMAT_REGEX,
   MINIMUM_PASSWORD_LENGTH,
   PASSWORD_FORMAT_REGEX,
 } from "../config/constValues";
@@ -27,12 +28,11 @@ export const getInputValue = (e: InputEvent): string => {
  * @returns A string containing the error message if invalid, or an empty string if valid.
  */
 export const invalidEmailGiveErrorMessage = (value: string): string => {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   let message: string = "";
 
   if (value.trim() === "") {
     message = "Email is required";
-  } else if (!regex.test(value)) {
+  } else if (!EMAIL_FORMAT_REGEX.test(value)) {
     message = "Invalid email format";
   }
 
