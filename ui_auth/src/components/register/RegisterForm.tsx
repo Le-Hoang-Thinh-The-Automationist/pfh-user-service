@@ -69,51 +69,55 @@ const RegisterForm: React.FC = () => {
   // =============================  REACT COMPONENT ======================
   return (
     <form className="auth-register__register-form">
-      {emailError && (
-        <span className="auth-register__input-error-display">{emailError}</span>
-      )}
-      <input
-        className="auth-register__form-input"
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={handleEmailChange}
-        onPaste={handleEmailChange}
-      />
-      {passwordError && (
-        <span className="auth-register__input-error-display">
-          {passwordError}
-        </span>
-      )}
-      <input
-        className="auth-register__form-input"
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={handlePasswordChange}
-        onPaste={handlePasswordChange}
-      />
-      {confirmPasswordError && (
-        <span className="auth-register__input-error-display">
-          {confirmPasswordError}
-        </span>
-      )}
-      <input
-        className="auth-register__form-input"
-        type="password"
-        placeholder="Confirm password"
-        value={confirmPassword}
-        onChange={handleConfirmPasswordChange}
-        onPaste={handleConfirmPasswordChange}
-      />
-      <button
-        className="auth-register__submit-button"
-        type="submit"
-        onClick={handleSubmit}
-        disabled={isDisabled}
-      >
-        Register
-      </button>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {emailError && (
+          <span className="auth-register__input-error-display">
+            {emailError}
+          </span>
+        )}
+        <input
+          className="auth-register__form-input"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={handleEmailChange}
+          onPaste={handleEmailChange}
+        />
+        {passwordError && (
+          <span className="auth-register__input-error-display">
+            {passwordError}
+          </span>
+        )}
+        <input
+          className="auth-register__form-input"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={handlePasswordChange}
+          onPaste={handlePasswordChange}
+        />
+        {confirmPasswordError && (
+          <span className="auth-register__input-error-display">
+            {confirmPasswordError}
+          </span>
+        )}
+        <input
+          className="auth-register__form-input"
+          type="password"
+          placeholder="Confirm password"
+          value={confirmPassword}
+          onChange={handleConfirmPasswordChange}
+          onPaste={handleConfirmPasswordChange}
+        />
+        <button
+          className="auth-register__submit-button"
+          type="submit"
+          onClick={handleSubmit}
+          disabled={isDisabled}
+        >
+          Register
+        </button>
+      </div>
     </form>
   );
 };
