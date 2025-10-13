@@ -50,6 +50,7 @@ ui_*/**/yarn-error.log*
 ui_*/**/pnpm-debug.log*
 ui_*/**/lerna-debug.log*
 
+ui_*/**/.astro/
 ui_*/**/node_modules
 ui_*/**/dist
 ui_*/**/dist-ssr

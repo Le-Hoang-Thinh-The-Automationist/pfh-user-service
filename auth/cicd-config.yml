@@ -1,0 +1,11 @@
+version: "1"
+ci_config:
+  package_management:
+    mvn:
+      enabled: true
+      version: "3.9.9"
+      java_version: "21"
+  delivery_management:
+    container:
+      type: docker
+
