@@ -7,7 +7,7 @@
  *
  *      ✅ **Acceptance Criteria with Equivalence Partitions:**
  *
- *          * **AC.1:** POST /api/auth/login accepts valid email/password and returns JWT token
+ *          * **AC.1:** POST /api/v1/auth/login accepts valid email/password and returns JWT token
  *              - Valid Partitions (VP):
  *                  VP.1: Correct email + correct password
  *              - Invalid Partitions (IP):
@@ -66,8 +66,8 @@ class BasicJwtAuthenticationTest extends AbstractIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private static final String REGISTRATION_ENDPOINT = "/api/auth/register";
-    private static final String LOGIN_URL = "/api/auth/login";
+    private static final String REGISTRATION_ENDPOINT = "/api/v1/auth/register";
+    private static final String LOGIN_URL = "/api/v1/auth/login";
 
     @Autowired
     private UserRepository userRepository;

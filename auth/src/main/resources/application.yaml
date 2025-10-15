@@ -1,11 +1,12 @@
 # Internal Application Configuration Section
 server:
   port: ${APP_PORT:8080}
+  servlet:
+    context-path: /api/v1
 
 management:
   server:
     port: ${APP_PORT:8080}
-    context-path: /api/v1
   endpoint:
     health:
       show-details: always
@@ -22,7 +23,7 @@ security:
   csrf:
     enabled: ${CSRF_ENABLED:false}
   cors:
-    enable: ${CORS_ENABLED:false}
+    enabled: ${CORS_ENABLED:true}
 
 login-rate-limiting:
   locked-duration-ms: ${AUTHEN_LOGIN_RATE_LIMITING_LOCKED_DURARION_IN_MS:1800000} # default is 30 minutes
