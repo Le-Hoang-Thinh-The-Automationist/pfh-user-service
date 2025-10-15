@@ -1,13 +1,13 @@
 services:
   redis:
     image: redis:7
-    container_name: redis
+    container_name: redis-auth
     ports:
       - "${REDIS_PORT:-6379}:6379"
 
   postgre_db:
     image: postgres:15
-    container_name: postgres-db
+    container_name: postgres-db-auth
     ports:
       - "${POSTGRE_SQL_DB_PORT:-5432}:5432"
     environment:
@@ -19,11 +19,13 @@ services:
     build:
       context: ../../auth
       dockerfile: ../infra_auth/local_dev/service_auth.Dockerfile
+    container_name: service-auth
     ports:
       - "${SERVICE_AUTH_PORT:-8080}:8080"
     environment:
       - APP_PORT=${SERVICE_AUTH_PORT:-8080}
-      - CSRF_ENABLE=${CSRF_ENABLE:-false}
+      - CSRF_ENABLED=${CSRF_ENABLED:-false}
+      - CORS_ENABLED=${CORS_ENABLED:-true}
       - AUTHEN_LOGIN_RATE_LIMITING_LOCKED_DURARION_IN_MS=${AUTHEN_LOGIN_RATE_LIMITING_LOCKED_DURARION_IN_MS:-1800000}
       - AUTHEN_LOGIN_RATE_LIMITING_ATTEMPT_WINDOW_IN_MS=${AUTHEN_LOGIN_RATE_LIMITING_ATTEMPT_WINDOW_IN_MS:-900000}
       - AUTHEN_LOGIN_RATE_LIMITING_IP_ATTEMPT_WINDOW_IN_MS=${AUTHEN_LOGIN_RATE_LIMITING_IP_ATTEMPT_WINDOW_IN_MS:-60000}
