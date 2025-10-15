@@ -5,6 +5,7 @@ server:
 management:
   server:
     port: ${APP_PORT:8080}
+    context-path: /api/v1
   endpoint:
     health:
       show-details: always
@@ -19,12 +20,14 @@ management:
 
 security:
   csrf:
-    enabled: ${CSRF_ENABLE:false}
+    enabled: ${CSRF_ENABLED:false}
+  cors:
+    enable: ${CORS_ENABLED:false}
 
 login-rate-limiting:
-  locked-duration-ms: ${AUTHEN_LOGIN_RATE_LIMITING_LOCKED_DURARION_IN_MS:1800000}     # default is 30 minutes
-  attempt-window-ms: ${AUTHEN_LOGIN_RATE_LIMITING_ATTEMPT_WINDOW_IN_MS:900000}        # default is 15 minutes
-  ip-attempt-window-ms: ${AUTHEN_LOGIN_RATE_LIMITING_IP_ATTEMPT_WINDOW_IN_MS:60000}   # default is 1 minute
+  locked-duration-ms: ${AUTHEN_LOGIN_RATE_LIMITING_LOCKED_DURARION_IN_MS:1800000} # default is 30 minutes
+  attempt-window-ms: ${AUTHEN_LOGIN_RATE_LIMITING_ATTEMPT_WINDOW_IN_MS:900000} # default is 15 minutes
+  ip-attempt-window-ms: ${AUTHEN_LOGIN_RATE_LIMITING_IP_ATTEMPT_WINDOW_IN_MS:60000} # default is 1 minute
 
 # External System Configuration Section
 spring:
@@ -56,7 +59,6 @@ spring:
     timeout: 2000
     ssl: false
 
-
 db:
   dbHostSource: ${POSTGRE_SQL_DB_HOST:localhost}
   dbPort: ${POSTGRE_SQL_DB_PORT:5432}
@@ -69,8 +71,6 @@ cache:
     timeout: 2000
     database: 0
     ssl: false
-
-
 
 # Secrets Section
 app:
