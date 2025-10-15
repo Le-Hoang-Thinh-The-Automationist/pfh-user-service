@@ -80,8 +80,8 @@ class AccountSecurityValidationTest extends AbstractIntegrationTest {
         AppConstant.ARGON2_ITERATIONS
     );
 
-    private static final String LOGIN_URL = "/api/v1/auth/login";
-    private static final String TEST_PASSWORD = "/api/v1/auth/register";
+    private static final String LOGIN_URL = "/auth/login";
+    private static final String TEST_PASSWORD = "/auth/register";
 
     @BeforeEach
     void setUp() {

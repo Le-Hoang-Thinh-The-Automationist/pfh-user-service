@@ -60,7 +60,7 @@
 //     @Autowired
 //     private AuditLogRepository auditLogRepository;
 
-//     private static final String LOGIN_URL = "/api/v1/auth/login";
+//     private static final String LOGIN_URL = "/auth/login";
 
 //     private LoginRequestDto validLogin;
 

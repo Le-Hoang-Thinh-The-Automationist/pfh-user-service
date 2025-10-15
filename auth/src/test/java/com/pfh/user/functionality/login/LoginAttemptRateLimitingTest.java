@@ -109,7 +109,7 @@ class LoginAttemptRateLimitingTest extends AbstractIntegrationTest {
         AppConstant.ARGON2_ITERATIONS
     );
 
-    private static final String LOGIN_URL = "/api/v1/auth/login";
+    private static final String LOGIN_URL = "/auth/login";
     private LoginRequestDto invalidCredentials;
     private LoginRequestDto ValidCredentials;
 

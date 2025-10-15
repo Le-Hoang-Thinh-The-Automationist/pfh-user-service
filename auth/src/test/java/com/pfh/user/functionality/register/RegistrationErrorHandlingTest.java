@@ -57,7 +57,7 @@ class RegistrationErrorHandlingTest extends AbstractIntegrationTest{
 
     private AuthService authService;
 
-    private static final String ENDPOINT_URL = "/api/v1/auth/register";
+    private static final String ENDPOINT_URL = "/auth/register";
 
     private RegistrationRequestDto validRequest;
 
