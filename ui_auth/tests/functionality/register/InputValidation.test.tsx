@@ -41,13 +41,15 @@
  *            - IP.3: Given the other inputs are correct, mismatching `confirm password` will disable register button
  */
 
-import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
 
 import RegisterForm from "../../../src/components/register/RegisterForm";
+
+/* -------------------------------------------------------------------------- */
+/*                                Test Setup                                  */
+/* -------------------------------------------------------------------------- */
 
 const setup = () => render(<RegisterForm />);
 
@@ -91,6 +93,10 @@ const INVALID_PASSWORD_FORMAT: string[] = [
 
 const MATCH_CONFIRM_PASSWORD: string = CORRECT_PASSWORD_FORMAT[0];
 const UNMATCH_CONFIRM_PASSWORD: string = "mismatch";
+
+/* -------------------------------------------------------------------------- */
+/*                         Acceptance Criteria Testing                        */
+/* -------------------------------------------------------------------------- */
 
 // Test Execution section
 // --- AC.1 Email Validation ---
@@ -295,16 +301,3 @@ describe("Input Validation - AC.5 (Register Button Disabled)", () => {
     expect(registerButton).toBeDisabled();
   });
 });
-
-// test("sends correct request format when registering", async () => {
-//   render(<RegisterForm />);
-
-//   // Simulate user typing and clicking
-//   await userEvent.type(screen.getByLabelText(/email/i), "user@example.com");
-//   await userEvent.click(screen.getByRole("button", { name: /register/i }));
-
-//   // If request fails expectations, test will fail
-//   expect(
-//     await screen.findByRole("button", { name: /register/i })
-//   ).toBeInTheDocument();
-// });
