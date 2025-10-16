@@ -45,8 +45,8 @@
 
 ✅ **Acceptance Criteria:**
 
-- [ ] **AC.1:** Clicking “Register” sends a `POST /auth/register` request with JSON body `{name, email, password, confirm_password}`
+- [ ] **AC.1:** Clicking “Register” sends a `POST api/v1/auth/register` request with JSON body `{ email, password, confirm_password}`
 - [ ] **AC.2:** A loading indicator is displayed while the request is processing
 - [ ] **AC.3:** Successful registration displays confirmation message: _“User registered successfully”_
-- [ ] **AC.4:** On success, user is redirected either to `/login` (with email pre-filled) or `/dashboard` with token stored securely
+- [ ] **AC.4:** On success, user is redirected either to `api/v1/auth/login` (with email pre-filled)
 - [ ] **AC.5:** If the API returns an error (e.g., duplicate email), the frontend shows a user-friendly error message
