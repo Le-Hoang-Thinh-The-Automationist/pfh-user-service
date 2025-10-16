@@ -7,7 +7,7 @@
  *
  *      ✅ **Acceptance Criteria:**
  *
- *          * **AC.1:** POST /api/auth/register endpoint accepts email and password
+ *          * **AC.1:** POST /auth/register endpoint accepts email and password
  *          * **AC.2:** Email format validation returns 400 Bad Request for invalid emails
  *          * **AC.3:** Password complexity validation enforces minimum 12 characters
  *          * **AC.4:** Successful registration returns 201 Created with user ID
@@ -58,7 +58,7 @@ class BasicUserRegistrationApiTest extends AbstractIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
-    private static final String REGISTRATION_ENDPOINT = "/api/auth/register";
+    private static final String REGISTRATION_ENDPOINT = "/auth/register";
     
     private RegistrationRequestDto validRegistrationRequest;
 

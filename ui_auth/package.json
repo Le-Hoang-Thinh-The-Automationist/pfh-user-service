@@ -8,7 +8,9 @@
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest",
-    "test:once": "vitest run"
+    "test:once": "vitest run",
+    "setup-infra": "docker compose -f ../infra_auth/local_dev/docker-compose.yml up -d --build",
+    "destroy-infra": "docker compose -f ../infra_auth/local_dev/docker-compose.yml down"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.0",
