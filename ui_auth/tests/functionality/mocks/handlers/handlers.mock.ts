@@ -1,9 +1,12 @@
 // src/mocks/handlers.ts
 import { http, HttpResponse } from "msw";
-import type { RegisterRequestDto, RegisterResponseDto } from "../../../../src/dto/RegisterDto";
 import { API_BASE_URL, API_PATH } from "../../../../src/config/constValues";
+import {
+  TEST_API__CORRECT_EMAIL,
+  TEST_API__VALID_PASSWORD,
+} from "./test_data/register.data.const";
 
-const FULL_API_PATH_TEST : string = `${API_BASE_URL}${API_PATH}`
+export const FULL_API_PATH_TEST: string = `${API_BASE_URL}${API_PATH}`;
 
 export const handlers = [
   http.post(`${FULL_API_PATH_TEST}/auth/register`, async ({ request }) => {
@@ -11,9 +14,9 @@ export const handlers = [
 
     // Assertions (or checks)
     expect(body).toEqual({
-      email: "user@example.com",
-      password: "",
-      confirmPassword: "",
+      email: `${TEST_API__CORRECT_EMAIL}`,
+      password: `${TEST_API__VALID_PASSWORD}`,
+      confirmPassword: `${TEST_API__VALID_PASSWORD}`,
     });
 
     return HttpResponse.json(
