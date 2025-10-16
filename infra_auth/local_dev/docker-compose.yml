@@ -1,0 +1,46 @@
+services:
+  redis:
+    image: redis:7
+    container_name: redis-auth
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+  postgre_db:
+    image: postgres:15
+    container_name: postgres-db-auth
+    ports:
+      - "${POSTGRE_SQL_DB_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRE_SQL_DB_NAME:-mydatabase}
+      - POSTGRES_USER=${POSTGRE_SQL_DB_USERNAME:-myuser}
+      - POSTGRES_PASSWORD=${POSTGRE_SQL_DB_PASSWORD:-mypassword}
+
+  service_auth:
+    build:
+      context: ../../auth
+      dockerfile: ../infra_auth/local_dev/service_auth.Dockerfile
+    container_name: service-auth
+    ports:
+      - "${SERVICE_AUTH_PORT:-8080}:8080"
+    environment:
+      - APP_PORT=${SERVICE_AUTH_PORT:-8080}
+      - CSRF_ENABLED=${CSRF_ENABLED:-false}
+      - CORS_ENABLED=${CORS_ENABLED:-true}
+      - AUTHEN_LOGIN_RATE_LIMITING_LOCKED_DURARION_IN_MS=${AUTHEN_LOGIN_RATE_LIMITING_LOCKED_DURARION_IN_MS:-1800000}
+      - AUTHEN_LOGIN_RATE_LIMITING_ATTEMPT_WINDOW_IN_MS=${AUTHEN_LOGIN_RATE_LIMITING_ATTEMPT_WINDOW_IN_MS:-900000}
+      - AUTHEN_LOGIN_RATE_LIMITING_IP_ATTEMPT_WINDOW_IN_MS=${AUTHEN_LOGIN_RATE_LIMITING_IP_ATTEMPT_WINDOW_IN_MS:-60000}
+      - POSTGRE_SQL_DB_HOST=${POSTGRE_SQL_DB_HOST:-postgre_db}
+      - POSTGRE_SQL_DB_PORT=${POSTGRE_SQL_DB_PORT:-5432}
+      - POSTGRE_SQL_DB_NAME=${POSTGRE_SQL_DB_NAME:-mydatabase}
+      - POSTGRE_SQL_DB_USERNAME=${POSTGRE_SQL_DB_USERNAME:-myuser}
+      - POSTGRE_SQL_DB_PASSWORD=${POSTGRE_SQL_DB_PASSWORD:-mypassword}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - JWT_SECRET=${JWT_SECRET:-DummySecretKeyWhichIsAtLeast32CharactersLong}
+
+  # ui_auth:
+  #   build: ${ REPOSITORY_PATH }/ui_auth
+  #   container_name: ui-auth
+  #   ports:
+  #     - "${UI_AUTH_PORT:-18080}:80"

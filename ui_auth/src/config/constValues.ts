@@ -1,6 +1,6 @@
 // API related
 export const API_BASE_URL: string =
-  import.meta.env.PUBLIC_API_URL || "http://localhost:5000";
+  import.meta.env.PUBLIC_API_URL || "http://localhost:8080";
 
 export const API_PATH: string = "/api/v1" as const;
 

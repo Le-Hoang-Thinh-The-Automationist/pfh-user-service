@@ -63,7 +63,7 @@ class PasswordSecurityImplementationTest extends AbstractIntegrationTest {
     // Example encoder aligned with OWASP recommended parameters
     private Argon2PasswordEncoder encoder;
 
-    private static final String ENDPOINT_URL = "/api/auth/register";
+    private static final String ENDPOINT_URL = "/auth/register";
 
     private RegistrationRequestDto validRegistrationRequest;
 

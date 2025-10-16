@@ -1,5 +1,5 @@
 # Use a lightweight OpenJDK base image
-FROM openjdk:17-jdk-slim
+FROM openjdk:21-jdk-slim
 
 # Copy the jar file into the container
 COPY target/*.jar app.jar
