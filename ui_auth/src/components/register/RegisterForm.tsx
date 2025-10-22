@@ -8,6 +8,7 @@ import {
   invalidPasswordGiveErrorMessage,
   type InputEvent,
 } from "../../utils/inputUtils";
+import RegisterLoadingIndicator from "./RegisterLoading";
 
 const RegisterForm: React.FC = () => {
   // =============================  REACT HOOKS AND OTHER VARIABLES ======================
@@ -18,6 +19,9 @@ const RegisterForm: React.FC = () => {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const isDisabled =
     !!emailError ||
@@ -30,12 +34,22 @@ const RegisterForm: React.FC = () => {
   // =============================  REACT EVENT HANDLER ======================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setSuccessMessage("");
 
     const payload: RegisterRequestDto = { email, password, confirmPassword };
 
-    const result = await registerUser(payload);
+    try {
+      const result = await registerUser(payload);
 
-    console.log("Register result:", result);
+      if (result?.data?.message) {
+        setSuccessMessage(result.data.message);
+      }
+    } catch (error) {
+      console.error("Registration failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEmailChange = (e: InputEvent) => {
@@ -71,12 +85,14 @@ const RegisterForm: React.FC = () => {
     <form className="auth-register__register-form">
       <div style={{ display: "flex", flexDirection: "column" }}>
         {/* Email Field */}
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div
+          className="auth-register__form-input"
+          style={{ display: "flex", flexDirection: "column" }}
+        >
           <label htmlFor="email" className="">
             Email<span className="">*</span>
           </label>
           <input
-            className="auth-register__form-input"
             type="email"
             placeholder="Email"
             value={email}
@@ -90,12 +106,14 @@ const RegisterForm: React.FC = () => {
           )}
         </div>
         {/* Password Field */}
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div
+          className="auth-register__form-input"
+          style={{ display: "flex", flexDirection: "column" }}
+        >
           <label htmlFor="password" className="">
             Password<span className="">*</span>
           </label>
           <input
-            className="auth-register__form-input"
             type="password"
             placeholder="Password"
             value={password}
@@ -108,12 +126,15 @@ const RegisterForm: React.FC = () => {
             </span>
           )}
         </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        {/* Confirm Password Field */}
+        <div
+          className="auth-register__form-input"
+          style={{ display: "flex", flexDirection: "column" }}
+        >
           <label htmlFor="password" className="">
             Confirm Password<span className="">*</span>
           </label>
           <input
-            className="auth-register__form-input"
             type="password"
             placeholder="Confirm password"
             value={confirmPassword}
@@ -130,11 +151,16 @@ const RegisterForm: React.FC = () => {
           className="auth-register__submit-button"
           type="submit"
           onClick={handleSubmit}
-          disabled={isDisabled}
+          disabled={isDisabled || isLoading}
         >
-          Register
+          {isLoading ? "Registering..." : "Register"}
         </button>
       </div>
+      {isLoading ? (
+        <RegisterLoadingIndicator />
+      ) : successMessage ? (
+        <div className="api-message">{successMessage}</div>
+      ) : null}
     </form>
   );
 };

@@ -79,52 +79,52 @@ describe("Submit Registration - AC.1 (POST request on register)", () => {
   });
 });
 
-// /**
-//  *  --- AC.2 ---
-//  *  Displays loading indicator while request is processing
-//  */
-// describe("Submit Registration - AC.2 (Loading Indicator)", () => {
-//   it("AC.2 - VP.1: Shows loading indicator during API call", async () => {
-//     setup();
-//     const user = userEvent.setup();
+/**
+ *  --- AC.2 ---
+ *  Displays loading indicator while request is processing
+ */
+describe("Submit Registration - AC.2 (Loading Indicator)", () => {
+  it("AC.2 - VP.1: Shows loading indicator during API call", async () => {
+    setup();
+    const user = userEvent.setup();
 
-//     await user.type(
-//       screen.getByPlaceholderText(/email/i),
-//       TEST_API__CORRECT_EMAIL
-//     );
-//     await user.type(
-//       screen.getByPlaceholderText(/^password$/i),
-//       TEST_API__VALID_PASSWORD
-//     );
-//     await user.type(
-//       screen.getByPlaceholderText(/confirm password/i),
-//       TEST_API__VALID_PASSWORD
-//     );
+    await user.type(
+      screen.getByPlaceholderText(/email/i),
+      TEST_API__CORRECT_EMAIL
+    );
+    await user.type(
+      screen.getByPlaceholderText(/^password$/i),
+      TEST_API__VALID_PASSWORD
+    );
+    await user.type(
+      screen.getByPlaceholderText(/confirm password/i),
+      TEST_API__VALID_PASSWORD
+    );
 
-//     await user.click(screen.getByRole("button", { name: /register/i }));
+    await user.click(screen.getByRole("button", { name: /register/i }));
 
-//     // Expect loading indicator visible
-//     expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    // Expect loading indicator visible
+    expect(screen.getByText(/registering your account/i)).toBeInTheDocument();
 
-//     /*
-//      *  Cover for AC3 - VP.1 of [Submit Registration]
-//      */
-//     const successMessage = await screen.findByText(
-//       /user registered successfully/i
-//     );
-//     expect(successMessage).toBeInTheDocument();
-//   });
-// });
+    /*
+     *  Cover for AC3 - VP.1 of [Submit Registration]
+     */
+    const successMessage = await screen.findByText(
+      /user registered successfully/i
+    );
+    expect(successMessage).toBeInTheDocument();
+  });
+});
 
-// /**
-//  *  --- AC.3 ---
-//  *  Successful registration displays confirmation message
-//  */
-// describe("Submit Registration - AC.3 (Success Message)", () => {
-//   it("AC.3 - VP.1: Shows success message upon successful registration", async () => {
-//     // The test case expectation is already covered by AC2 - VP.1 of [Submit Registration]
-//   });
-// });
+/**
+ *  --- AC.3 ---
+ *  Successful registration displays confirmation message
+ */
+describe("Submit Registration - AC.3 (Success Message)", () => {
+  it("AC.3 - VP.1: Shows success message upon successful registration", async () => {
+    // The test case expectation is already covered by AC2 - VP.1 of [Submit Registration]
+  });
+});
 
 // /**
 //  *  --- AC.4 ---
