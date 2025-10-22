@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import { registerUser } from "../../services/authService";
 import type { RegisterRequestDto } from "../../dto/RegisterDto";
 import {
@@ -40,10 +41,12 @@ const RegisterForm: React.FC = () => {
     const payload: RegisterRequestDto = { email, password, confirmPassword };
 
     try {
-      const result = await registerUser(payload);
+      const res = await registerUser(payload);
 
-      if (result?.data?.message) {
-        setSuccessMessage(result.data.message);
+      if (res?.status === 201 && res?.data?.message) {
+        setSuccessMessage(res.data.message);
+      } else {
+        // This is where error message should be, but not implemented yet
       }
     } catch (error) {
       console.error("Registration failed:", error);
