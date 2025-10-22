@@ -1,5 +1,5 @@
 // src/mocks/handlers.ts
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 import { API_BASE_URL, API_PATH } from "../../../../src/config/constValues";
 import {
   TEST_API__CORRECT_EMAIL,
@@ -18,6 +18,9 @@ export const handlers = [
       password: `${TEST_API__VALID_PASSWORD}`,
       confirmPassword: `${TEST_API__VALID_PASSWORD}`,
     });
+
+    // Simulate a 2-second delay
+    await delay(100);
 
     return HttpResponse.json(
       { message: "User registered successfully" },
