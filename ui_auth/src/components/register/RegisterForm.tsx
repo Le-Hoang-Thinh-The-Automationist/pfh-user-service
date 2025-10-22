@@ -70,45 +70,62 @@ const RegisterForm: React.FC = () => {
   return (
     <form className="auth-register__register-form">
       <div style={{ display: "flex", flexDirection: "column" }}>
-        {emailError && (
-          <span className="auth-register__input-error-display">
-            {emailError}
-          </span>
-        )}
-        <input
-          className="auth-register__form-input"
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={handleEmailChange}
-          onPaste={handleEmailChange}
-        />
-        {passwordError && (
-          <span className="auth-register__input-error-display">
-            {passwordError}
-          </span>
-        )}
-        <input
-          className="auth-register__form-input"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={handlePasswordChange}
-          onPaste={handlePasswordChange}
-        />
-        {confirmPasswordError && (
-          <span className="auth-register__input-error-display">
-            {confirmPasswordError}
-          </span>
-        )}
-        <input
-          className="auth-register__form-input"
-          type="password"
-          placeholder="Confirm password"
-          value={confirmPassword}
-          onChange={handleConfirmPasswordChange}
-          onPaste={handleConfirmPasswordChange}
-        />
+        {/* Email Field */}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <label htmlFor="email" className="">
+            Email<span className="">*</span>
+          </label>
+          <input
+            className="auth-register__form-input"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={handleEmailChange}
+            onPaste={handleEmailChange}
+          />
+          {emailError && (
+            <span className="auth-register__input-error-display">
+              {emailError}
+            </span>
+          )}
+        </div>
+        {/* Password Field */}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <label htmlFor="password" className="">
+            Password<span className="">*</span>
+          </label>
+          <input
+            className="auth-register__form-input"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={handlePasswordChange}
+            onPaste={handlePasswordChange}
+          />
+          {passwordError && (
+            <span className="auth-register__input-error-display">
+              {passwordError}
+            </span>
+          )}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <label htmlFor="password" className="">
+            Confirm Password<span className="">*</span>
+          </label>
+          <input
+            className="auth-register__form-input"
+            type="password"
+            placeholder="Confirm password"
+            value={confirmPassword}
+            onChange={handleConfirmPasswordChange}
+            onPaste={handleConfirmPasswordChange}
+          />
+          {confirmPasswordError && (
+            <span className="auth-register__input-error-display">
+              {confirmPasswordError}
+            </span>
+          )}
+        </div>
         <button
           className="auth-register__submit-button"
           type="submit"
